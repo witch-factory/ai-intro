@@ -16,10 +16,10 @@ class Maze:
 
         with open(filename) as f:
             lines = f.readlines()
-
+        #파일 읽어오기
         lines = list(filter(lambda x: not re.match(r'^\s*$', x), lines))
         lines = [list(line.strip('\n')) for line in lines]
-
+        #print(lines)
         self.rows = len(lines)
         self.cols = len(lines[0])
         self.mazeRaw = lines
@@ -33,15 +33,19 @@ class Maze:
         for row in range(len(self.mazeRaw)):
             for col in range(len(self.mazeRaw[0])):
                 if self.mazeRaw[row][col] == self.__startchar:
+                    #나는 start(T로 표시)에서 시작한다
                     self.__start = (row, col)
                 elif self.mazeRaw[row][col] == self.__objectivechar:
+                    #'.' 으로 표시되는 곳이 목적지
                     self.__objective.append((row, col))
 
     def isWall(self, row, col):
         return self.mazeRaw[row][col] == self.__wall
+    #벽인지 체크
 
     def isObjective(self, row, col):
         return (row, col) in self.__objective
+    #목적지인지 체크
 
     ## 시작 위치의 tuple(row, col)을 return
     def startPoint(self):
