@@ -23,30 +23,31 @@ def bfs(maze):
     [문제 01] 제시된 stage1의 맵 세가지를 BFS Algorithm을 통해 최단 경로를 return하시오.(20점)
     """
     start_point=maze.startPoint()
+    #print(maze._Maze__objective)
     path = []
     ####################### Write Your Code Here ################################
     q = collections.deque([start_point])
     prev_visited={start_point:(-1, -1)}
     #이전에 방문했던 점을 저장해 놓으면 경로를 역추적 가능하다
-    visited_objective = []
     # 방문한 목적지들을 저장해 놓는다
     while q:
         cur_point=q.pop()
         neighbors=maze.neighborPoints(cur_point[0], cur_point[1])
-        print(neighbors)
         # 갈 수 있는 점들을 알아서 뽑아내준다
         for next_point in neighbors:
             if next_point in prev_visited:
                 continue
             prev_visited[next_point] = cur_point
+            #print(next_point)
             if maze.isObjective(next_point[0], next_point[1]):
                 track=next_point
                 while track!=(-1,-1):
                     path.append(track)
+                    #print(track)
+                    track=prev_visited[track]
                 break
-            for p in maze.neighborPoints(next_point[0], next_point[1]):
-                q.appendleft(p)
-        #print(prev_visited)
+            q.appendleft(next_point)
+        #print(path)
     return path
 
     ############################################################################
