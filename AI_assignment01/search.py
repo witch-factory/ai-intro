@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###### Write Your Library Here ###########
 import collections
-
+from heapq import *
 
 
 #########################################
@@ -57,7 +57,7 @@ def bfs(maze):
 class Node:
     # 휴리스틱 함수를 포함하는 노드이다
     def __init__(self,parent,location):
-        self.parent=parent
+        self.parent=parent #이전에 방문한 노드, 즉 부모 노드
         self.location=location #현재 노드
 
         self.obj=[]
@@ -65,7 +65,7 @@ class Node:
         # F = G+H
         self.f=0
         self.g=0
-        self.h=0
+        self.h=0 #휴리스틱 거리
 
     def __eq__(self, other):
         return self.location==other.location and str(self.obj)==str(other.obj)
@@ -85,31 +85,46 @@ class Node:
 
 # -------------------- Stage 01: One circle - A* Algorithm ------------------------ #
 
-def manhatten_dist(p1,p2):
+def manhattan_dist(p1,p2):
     return abs(p1[0]-p2[0])+abs(p1[1]-p2[1])
 
 def astar(maze):
 
     """
     [문제 02] 제시된 stage1의 맵 세가지를 A* Algorithm을 통해 최단경로를 return하시오.(20점)
-    (Heuristic Function은 위에서 정의한 manhatten_dist function을 사용할 것.)
+    (Heuristic Function은 위에서 정의한 manhattan_dist function을 사용할 것.)
     """
 
     start_point=maze.startPoint()
 
     end_point=maze.circlePoints()[0]
-
+    # 목적지이다
     path=[]
 
     ####################### Write Your Code Here ################################
+    priority_queue=[]
+    heappush(priority_queue, Node(None, start_point))
+    # start 노드부터 시작
+    while priority_queue:
+        cur=heappop(priority_queue)
+        if cur.location in path:continue
+        if cur.location==end_point:
+            track=cur
+            while track.parent is not None:
+                path.append(track.location)
+                track=track.parent
+            break
 
-
-
-
-
-
-
-
+        neighbors=maze.neighborPoints(cur.location[0], cur.location[1])
+        # 갈 수 있는 곳
+        for neighbor in neighbors:
+            #방문할 수 있는 이웃 정점
+            new_node=Node(cur, neighbor)
+            # cur를 바로전에 방문했을 것이다
+            new_node.g=cur.g+1
+            new_node.h=manhattan_dist(neighbor, end_point)
+            new_node.f=new_node.g+new_node.h
+            heappush(priority_queue, new_node)
 
 
 
