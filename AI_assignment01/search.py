@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ###### Write Your Library Here ###########
 
 

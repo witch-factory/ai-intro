@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # --------- GUI Setting --------- #
 
 import pygame
@@ -23,10 +24,10 @@ class Pygame_APP:
 
         self.maze = Maze(filename)
         self.gridDim = self.maze.getDimensions()
-
+        #창크기 만들기
         self.windowHeight = self.gridDim[0] * self.scale
         self.windowWidth = self.gridDim[1] * self.scale
-
+        #블럭 하나가 얼만큼의 넓이를 차지할지
         self.blockSizeX = int(self.windowWidth / self.gridDim[1])
         self.blockSizeY = int(self.windowHeight / self.gridDim[0])
 
@@ -172,10 +173,12 @@ if __name__ == "__main__":
                         help='search method - default bfs')
     parser.add_argument('--scale', dest="scale", type=int, default = 20,
                         help='scale - default: 20')
+    # scale은 창의 크기를 몇으로 할지를 정한다
     parser.add_argument('--speed', dest="speed", type=int, default = 15,
                         help='speed for the display - default 15')
     parser.add_argument('--keyboard', default = False, action = "store_true",
                         help='you can play the game - default False')
+    # 키보드로 직접 컨트롤이 가능한지
     parser.add_argument('--save', dest="save", type=str, default = None,
                         help='save output to image file - default not saved')
 
