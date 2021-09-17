@@ -60,7 +60,7 @@ class Node:
         self.parent=parent #이전에 방문한 노드, 즉 부모 노드
         self.location=location #현재 노드
 
-        self.obj=[]
+        self.obj=[] #어떤 목적지들을 거쳐왔는지
 
         # F = G+H
         self.f=0
@@ -103,17 +103,25 @@ def astar(maze):
 
     ####################### Write Your Code Here ################################
     priority_queue=[]
+    visited=set()
+    #방문한 좌표들을 저장한다
     heappush(priority_queue, Node(None, start_point))
     # start 노드부터 시작
     while priority_queue:
         cur=heappop(priority_queue)
-        if cur.location in path:continue
+        if cur.location in visited:continue
         if cur.location==end_point:
+            # 목적지에 도착
             track=cur
-            while track.parent is not None:
+            while track is not None:
                 path.append(track.location)
                 track=track.parent
+            path=path[::-1]
+            #reverse the list to gain the right path
+            #print(path)
             break
+
+        visited.add(cur.location)
 
         neighbors=maze.neighborPoints(cur.location[0], cur.location[1])
         # 갈 수 있는 곳
@@ -126,14 +134,6 @@ def astar(maze):
             new_node.f=new_node.g+new_node.h
             heappush(priority_queue, new_node)
 
-
-
-
-
-
-
-
-
     return path
 
     ############################################################################
@@ -143,8 +143,8 @@ def astar(maze):
 
 
 
-def stage2_heuristic():
-    pass
+def stage2_heuristic(p1, p2):
+    return abs(p1[0]-p2[0])+abs(p1[1]-p2[1])
 
 
 def astar_four_circles(maze):
@@ -160,21 +160,32 @@ def astar_four_circles(maze):
 
     ####################### Write Your Code Here ################################
 
+    start_point=maze.startPoint()
+    all_path=[[] for i in range(maze.rows)]
+    for end_point in end_points:
+        priority_queue=[]
+        visited = set()
+        # 방문한 좌표들을 저장한다
+        heappush(priority_queue, Node(None, start_point))
+        # start 노드부터 시작
 
+        while priority_queue:
+            cur_node=heappop(priority_queue)
+            if cur_node.location in visited:continue
+            if cur_node.location==end_point:
 
+                break
 
+            visited.add(cur_node.location)
 
+            next_points=maze.neighborPoints(cur_node[0],cur_node[1])
 
-
-
-
-
-
-
-
-
-
-
+            for next_point in next_points:
+                next_node=Node(cur_node.location, next_point)
+                next_node.g=cur_node.g+1
+                next_node.h=stage2_heuristic(next_point, end_point)
+                next_node.f=next_node.g+next_node.h
+                heappush(priority_queue, next_node)
 
 
     return path
