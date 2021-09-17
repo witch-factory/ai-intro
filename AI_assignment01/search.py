@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ###### Write Your Library Here ###########
 import collections
+import copy
 from heapq import *
 
 
@@ -60,7 +61,7 @@ class Node:
         self.parent=parent #이전에 방문한 노드, 즉 부모 노드
         self.location=location #현재 노드
 
-        self.obj=[] #어떤 목적지들을 거쳐왔는지
+        self.obj=[] #어떤 목적지들을 거쳐왔는지. 현재의 방문상태
 
         # F = G+H
         self.f=0
@@ -161,35 +162,66 @@ def astar_four_circles(maze):
     ####################### Write Your Code Here ################################
 
     start_point=maze.startPoint()
-    all_path=[[] for i in range(maze.rows)]
-    for end_point in end_points:
-        priority_queue=[]
-        visited = set()
-        # 방문한 좌표들을 저장한다
-        heappush(priority_queue, Node(None, start_point))
-        # start 노드부터 시작
+    #all_path=[[[] for j in range(len(end_points)+1)] for i in range(len(end_points)+1)]
+    # [i][j] 는 i번 목적지에서 j번 목적지로 가는 경로를 넣어 놓는다. 0번은 출발지점
 
-        while priority_queue:
-            cur_node=heappop(priority_queue)
-            if cur_node.location in visited:continue
-            if cur_node.location==end_point:
+    priority_queue = []
+    visited = set()
+    # 방문한 좌표들을 저장한다
+    start_node=Node(None, start_point)
+    heappush(priority_queue, start_node)
+    cur_node=start_node
+    # start 노드부터 시작
+    while set(cur_node.obj)!=set(end_points):
+        cur_node = heappop(priority_queue)
+        if cur_node.location in visited:
+            continue
 
-                break
+        cur_goal_point=None
+        # 이번에 갈 점을 정한다
+        for end_point in end_points:
+            if end_point not in cur_node.obj and cur_goal_point==None:
+                cur_goal_point=end_point
+                continue
+            if end_point not in cur_node.obj and \
+                stage2_heuristic(end_point, cur_node.location)<stage2_heuristic(cur_goal_point, cur_node.location):
+                cur_goal_point=end_point
 
-            visited.add(cur_node.location)
+        if cur_node.location==cur_goal_point:
+            # 도달 못한 점만 cur_goal_point가 되므로 도달한 점에 또 도달할 일은 없다
+            cur_node.obj.append(cur_node.location)
+            # 새로 도달한 목적지를 저장해줌. cur_node.location 이 목적지 중 하나
+            track=cur_node
+            temp_path=[]
+            while track is not None:
+                temp_path.append(track.location)
+                track=track.parent
+            temp_path.reverse()
+            path.extend(temp_path)
+            # 도착한 목적지를 새 노드로 삼아서 출발
+            new_start_node=cur_node
+            cur_node.parent=None
+            priority_queue = []
+            visited = set()
+            heappush(priority_queue, new_start_node)
 
-            next_points=maze.neighborPoints(cur_node[0],cur_node[1])
+            continue
 
-            for next_point in next_points:
-                next_node=Node(cur_node.location, next_point)
-                next_node.g=cur_node.g+1
-                next_node.h=stage2_heuristic(next_point, end_point)
-                next_node.f=next_node.g+next_node.h
-                heappush(priority_queue, next_node)
+        visited.add(cur_node.location)
 
-
+        neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
+        # 갈 수 있는 곳
+        for neighbor in neighbors:
+            # 방문할 수 있는 이웃 정점
+            next_node = Node(cur_node, neighbor)
+            # cur를 바로전에 방문했을 것이다
+            next_node.g = cur_node.g + 1
+            next_node.h = manhattan_dist(neighbor, cur_goal_point)
+            next_node.f = next_node.g+next_node.h
+            next_node.obj=cur_node.obj
+            heappush(priority_queue, next_node)
+        #print(path)
     return path
-
     ############################################################################
 
 
