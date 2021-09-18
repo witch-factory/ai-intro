@@ -25,10 +25,12 @@ def bfs(maze):
     """
     start_point=maze.startPoint()
     #print(maze._Maze__objective)
+    end_point=maze.circlePoints()[0]
     path = []
     ####################### Write Your Code Here ################################
     q = collections.deque([start_point])
     prev_visited={start_point:(-1, -1)}
+    cur_point=start_point
     #이전에 방문했던 점을 저장해 놓으면 경로를 역추적 가능하다
     # 방문한 목적지들을 저장해 놓는다
     while q:
@@ -48,8 +50,8 @@ def bfs(maze):
                     track=prev_visited[track]
                 break
             q.appendleft(next_point)
-        #print(path)
-    return path
+    return path[::-1]
+    #뒤집은 경로를 리턴해 줘야 한다.
 
     ############################################################################
 
@@ -134,7 +136,7 @@ def astar(maze):
             new_node.h=manhattan_dist(neighbor, end_point)
             new_node.f=new_node.g+new_node.h
             heappush(priority_queue, new_node)
-
+    print(path)
     return path
 
     ############################################################################
@@ -296,7 +298,7 @@ def astar_four_circles(maze):
             next_node.f = next_node.g+next_node.h
             next_node.obj=cur_node.obj
             heappush(priority_queue, next_node)
-        #print(path)
+    #print(path)
     return path
     ############################################################################
 

@@ -121,15 +121,16 @@ class Pygame_APP:
         g_step = (end_color[1] - start_color[1]) / pathLength
         b_step = (end_color[2] - start_color[2]) / pathLength
 
-        red = start_color[0] + index * r_step
-        green = start_color[1] + index * g_step
-        blue = start_color[2] + index * b_step
+        red = max(start_color[0] + index * r_step,0)
+        green = max(start_color[1] + index * g_step,0)
+        blue = max(start_color[2] + index * b_step,0)
 
         return (red, green, blue)
 
     def drawPath(self, path):
         for p in range(len(path)):
             color = self.getColor(len(path), p)
+            #print(color)
             self.drawSquare(path[p][0], path[p][1], color)
 
     def drawWall(self, row, col):
