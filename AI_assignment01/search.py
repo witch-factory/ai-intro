@@ -136,7 +136,6 @@ def astar(maze):
             new_node.h=manhattan_dist(neighbor, end_point)
             new_node.f=new_node.g+new_node.h
             heappush(priority_queue, new_node)
-    print(path)
     return path
 
     ############################################################################
@@ -146,12 +145,67 @@ def astar(maze):
 
 
 
-def stage2_heuristic(node, end_points):
+def stage2_heuristic(node, end_points, dist_between_goals):
     dist=0
+    nearest_dist=-1
+    # 가장 맨해튼 거리가 가까운 노드까지의 맨해튼 거리
+    nearest_goal=None
+    # 맨해튼 거리가 가장 가까운 점
+    for end_point in end_points:
+        if end_point in node.obj: continue
+        # 이미 그 노드에 방문한 경우
+        if nearest_dist == -1:
+            nearest_dist = manhattan_dist(node.location, end_point)
+            nearest_goal = end_point
+        else:
+            if manhattan_dist(node.location, end_point) < nearest_dist:
+                # 맨해튼 거리가 더 작은 다른 목표가 있다면 그걸로 잡는다
+                nearest_dist = manhattan_dist(node.location, end_point)
+                nearest_goal = end_point
+            # 가장 맨해튼 거리가 가까운 노드까지의 거리를 구한다
+
+    visited_goals=set(node.obj)
+    visited_goals.add(nearest_goal)
+    # 모든 goal을 다 방문할 때까지의 거리를 구해야 한다
+    cur_goal=nearest_goal
+    all_visit_cost=0
+    # 아직 안 방문한 모든 정점을 방문하는 데에 드는 비용
+    while visited_goals!=set(end_points):
+        # 가장 가까운 목표에서, 아직 안 방문한 목표들을 모두 방문하는 데 얼만큼의 비용이 드는지
+        next_goal=None
+        for end_point in end_points:
+            #더 적은 비용으로 갈 수 있는, 아직 안 방문한 정점을 찾는다
+            if end_point in visited_goals:continue
+            #if end_point==nearest_goal:continue
+            if next_goal==None:
+                next_goal=end_point
+            else:
+                if dist_between_goals[end_points.index(cur_goal)+1][end_points.index(end_point)+1]< \
+                        dist_between_goals[end_points.index(cur_goal) + 1][end_points.index(next_goal) + 1]:
+                    # 더 적은 비용으로 갈 수 있는 목표를 바로 다음에 간다
+                    next_goal=end_point
+        visited_goals.add(next_goal)
+        #새로 방문한 목표
+        all_visit_cost+=dist_between_goals[end_points.index(cur_goal)+1][end_points.index(next_goal)+1]
+        cur_goal=next_goal
+    dist=nearest_dist+all_visit_cost
+    """for end_point in end_points:
+        if end_point in node.obj:continue
+        # 이미 그 노드에 방문한 경우
+        if nearest_dist==-1:
+            nearest_dist=manhattan_dist(node.location, end_point)
+            nearest_point=end_point
+        else:
+            if manhattan_dist(node.location, end_point)<nearest_dist:
+                # 맨해튼 거리가 더 작은 다른 목표가 있다면 그걸로 잡는다
+                nearest_dist=manhattan_dist(node.location, end_point)
+                nearest_point=end_point
+            # 가장 맨해튼 거리가 가까운 노드까지의 거리를 구한다
+
     for end_point in end_points:
         # 아직 방문 안 한 정점들까지의 거리 합
         if end_point in node.obj:continue
-        dist+=manhattan_dist(end_point, node.location)
+        dist+=manhattan_dist(end_point, node.location)"""
     return dist
 
 
@@ -168,11 +222,58 @@ def astar_four_circles(maze):
 
     ####################### Write Your Code Here ################################
 
+    all_goal_dist=[[0 for j in range(len(end_points)+1)] for i in range(len(end_points)+1)]
+    #모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal사이의 거리
+    #휴리스틱 함수에서 사용하며, 나중에 모든 goal들 각각 간의 경로도 구해 놓는 식으로 전처리 최적화 가능
+    #일단은 거리만 구해놓고 경로는 나중에 온라인으로 구하자
+    print(end_points)
+    for goal_idx in range(len(end_points)):
+        goal=end_points[goal_idx]
+        bfs_start_node=Node(None, goal)
+        q=collections.deque([bfs_start_node])
+        # 각 goal에서 시작한다
+        #prev_visited = {goal: (-1, -1)}
+        #cur_point = goal
+        # 이전에 방문했던 점을 저장해 놓으면 경로를 역추적 가능하다
+        # 방문한 목적지들을 저장해 놓는다
+        visited_goal=set()
+        left_goal=set()
+        visited=set()
+        visited.add(goal)
+        for left in end_points:
+            if left!=goal:
+                #우리가 시작한 goal 외에는 모두 방문해야 할 점들
+                left_goal.add(left)
+        while q and left_goal!=visited_goal:
+            cur_node = q.pop()
+            cur_point=cur_node.location
+            neighbors = maze.neighborPoints(cur_point[0], cur_point[1])
+            # 갈 수 있는 점들을 알아서 뽑아내준다
+            for next_point in neighbors:
+                if next_point in visited:
+                    continue
+                visited.add(next_point)
+                # print(next_point)
+                if maze.isObjective(next_point[0], next_point[1]):
+                    #path_between_goal=[]
+                    visited_goal.add(next_point)
+                    #visited=set()
+                    track = next_point
+                    """while track != (-1, -1):
+                        path_between_goal.append(track)
+                        # print(track)
+                        track = prev_visited[track]"""
+                    all_goal_dist[end_points.index(next_point)+1][goal_idx+1]=cur_node.g+1
+                    all_goal_dist[goal_idx+1][end_points.index(next_point)+1]=cur_node.g+1
+                next_node=Node(cur_node, next_point)
+                next_node.g=cur_node.g+1
+                q.appendleft(next_node)
+    print(all_goal_dist)
     start_point=maze.startPoint()
     pq=[]
     visited=set()
     start_node=Node(None, start_point)
-    start_node.h=stage2_heuristic(start_node, end_points)
+    start_node.h=stage2_heuristic(start_node, end_points, all_goal_dist)
     start_node.f=start_node.g+start_node.h
     # 시작 노드의 휴리스틱 거리
     heappush(pq, start_node)
@@ -186,8 +287,6 @@ def astar_four_circles(maze):
             continue
 
         if cur_node.location in end_points:
-            cur_node.obj.append(cur_node.location)
-            print(cur_node.obj)
             track = cur_node
             temp_path = []
             while track is not None:
@@ -200,6 +299,12 @@ def astar_four_circles(maze):
             pq=[]
             # 지금까지 거쳐온 경로는 저장
 
+            cur_node.obj.append(cur_node.location)
+            print(cur_node.obj)
+            if set(cur_node.obj)==set(end_points):
+                # 모든 목표를 방문했으면 끝내야 한다
+                break
+            
             neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
             # 갈 수 있는 곳
             for neighbor in neighbors:
@@ -208,9 +313,10 @@ def astar_four_circles(maze):
                 # cur를 바로전에 방문했을 것이다
                 next_node.obj = cur_node.obj
                 next_node.g = cur_node.g + 1
-                next_node.h = stage2_heuristic(next_node, end_points)
+                next_node.h = stage2_heuristic(next_node, end_points, all_goal_dist)
                 next_node.f = next_node.g + next_node.h
                 heappush(pq, next_node)
+                print(next_node.h)
             """new_start_node = cur_node
             cur_node.parent = None
             pq = []
@@ -229,7 +335,7 @@ def astar_four_circles(maze):
             # cur를 바로전에 방문했을 것이다
             next_node.obj = cur_node.obj
             next_node.g = cur_node.g + 1
-            next_node.h = stage2_heuristic(next_node, end_points)
+            next_node.h = stage2_heuristic(next_node, end_points, all_goal_dist)
             next_node.f = next_node.g + next_node.h
             heappush(pq, next_node)
 
