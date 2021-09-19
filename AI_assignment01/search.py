@@ -74,16 +74,16 @@ class Node:
         return self.location==other.location and str(self.obj)==str(other.obj)
 
     def __le__(self, other):
-        return self.g+self.h<=other.g+other.h
+        return self.f<=other.f
 
     def __lt__(self, other):
-        return self.g+self.h<other.g+other.h
+        return self.f<other.f
 
     def __gt__(self, other):
-        return self.g+self.h>other.g+other.h
+        return self.f>other.f
 
     def __ge__(self, other):
-        return self.g+self.h>=other.g+other.h
+        return self.f>=other.f
 
 
 # -------------------- Stage 01: One circle - A* Algorithm ------------------------ #
@@ -146,11 +146,97 @@ def astar(maze):
 
 
 
-def stage2_heuristic(p1, p2):
-    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+def stage2_heuristic(node, end_points):
+    dist=0
+    for end_point in end_points:
+        # 아직 방문 안 한 정점들까지의 거리 합
+        if end_point in node.obj:continue
+        dist+=manhattan_dist(end_point, node.location)
+    return dist
 
 
 def astar_four_circles(maze):
+    """
+    [문제 03] 제시된 stage2의 맵 세가지를 A* Algorithm을 통해 최단 경로를 return하시오.(30점)
+    (단 Heurstic Function은 위의 stage2_heuristic function을 직접 정의하여 사용해야 한다.)
+    """
+
+    end_points=maze.circlePoints()
+    end_points.sort()
+
+    path=[]
+
+    ####################### Write Your Code Here ################################
+
+    start_point=maze.startPoint()
+    pq=[]
+    visited=set()
+    start_node=Node(None, start_point)
+    start_node.h=stage2_heuristic(start_node, end_points)
+    start_node.f=start_node.g+start_node.h
+    # 시작 노드의 휴리스틱 거리
+    heappush(pq, start_node)
+    cur_node=start_node
+
+    while set(cur_node.obj)!=set(end_points):
+        cur_node = heappop(pq)
+        if cur_node.location in visited:
+            continue
+        if cur_node.location in cur_node.obj:
+            continue
+
+        if cur_node.location in end_points:
+            cur_node.obj.append(cur_node.location)
+            print(cur_node.obj)
+            track = cur_node
+            temp_path = []
+            while track is not None:
+                temp_path.append(track.location)
+                track = track.parent
+            temp_path.reverse()
+            path.extend(temp_path)
+            visited=set()
+            cur_node.parent=None
+            pq=[]
+            # 지금까지 거쳐온 경로는 저장
+
+            neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
+            # 갈 수 있는 곳
+            for neighbor in neighbors:
+                # 방문할 수 있는 이웃 정점
+                next_node = Node(cur_node, neighbor)
+                # cur를 바로전에 방문했을 것이다
+                next_node.obj = cur_node.obj
+                next_node.g = cur_node.g + 1
+                next_node.h = stage2_heuristic(next_node, end_points)
+                next_node.f = next_node.g + next_node.h
+                heappush(pq, next_node)
+            """new_start_node = cur_node
+            cur_node.parent = None
+            pq = []
+            visited = set()
+            heappush(pq, new_start_node)"""
+
+            continue
+
+        visited.add(cur_node.location)
+
+        neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
+        # 갈 수 있는 곳
+        for neighbor in neighbors:
+            # 방문할 수 있는 이웃 정점
+            next_node = Node(cur_node, neighbor)
+            # cur를 바로전에 방문했을 것이다
+            next_node.obj = cur_node.obj
+            next_node.g = cur_node.g + 1
+            next_node.h = stage2_heuristic(next_node, end_points)
+            next_node.f = next_node.g + next_node.h
+            heappush(pq, next_node)
+
+    return path
+
+
+def astar_four_circles_2(maze):
     """
     [문제 03] 제시된 stage2의 맵 세가지를 A* Algorithm을 통해 최단 경로를 return하시오.(30점)
     (단 Heurstic Function은 위의 stage2_heuristic function을 직접 정의하여 사용해야 한다.)
