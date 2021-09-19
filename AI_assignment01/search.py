@@ -147,83 +147,7 @@ def astar(maze):
 
 
 def stage2_heuristic(p1, p2):
-    return abs(p1[0]-p2[0])+abs(p1[1]-p2[1])
-
-def astar_four_circles_dijkstra(maze):
-    """
-    [문제 03] 제시된 stage2의 맵 세가지를 A* Algorithm을 통해 최단 경로를 return하시오.(30점)
-    (단 Heurstic Function은 위의 stage2_heuristic function을 직접 정의하여 사용해야 한다.)
-    """
-    #  다익스트라 써서 최적의 최단경로 찾기
-    end_points=maze.circlePoints()
-    end_points.sort()
-
-    path=[]
-
-    ####################### Write Your Code Here ################################
-
-    start_point=maze.startPoint()
-    all_path=[[[] for j in range(len(end_points)+1)] for i in range(len(end_points)+1)]
-    # [i][j] 는 i번 목적지에서 j번 목적지로 가는 경로를 넣어 놓는다. 0번은 출발지점
-
-    priority_queue = []
-    visited = set()
-    # 방문한 좌표들을 저장한다
-    start_node=Node(None, start_point)
-    heappush(priority_queue, start_node)
-    cur_node=start_node
-    # start 노드부터 시작
-
-    while set(cur_node.obj)!=set(end_points):
-        cur_node = heappop(priority_queue)
-        if cur_node.location in visited:
-            continue
-
-        cur_goal_point=None
-        # 이번에 갈 점을 정한다
-        for end_point in end_points:
-            if end_point not in cur_node.obj and cur_goal_point==None:
-                cur_goal_point=end_point
-                continue
-            if end_point not in cur_node.obj and \
-                stage2_heuristic(end_point, cur_node.location)<stage2_heuristic(cur_goal_point, cur_node.location):
-                cur_goal_point=end_point
-
-        if cur_node.location==cur_goal_point:
-            # 도달 못한 점만 cur_goal_point가 되므로 도달한 점에 또 도달할 일은 없다
-            cur_node.obj.append(cur_node.location)
-            # 새로 도달한 목적지를 저장해줌. cur_node.location 이 목적지 중 하나
-            track=cur_node
-            temp_path=[]
-            while track is not None:
-                temp_path.append(track.location)
-                track=track.parent
-            temp_path.reverse()
-            path.extend(temp_path)
-            # 도착한 목적지를 새 노드로 삼아서 출발
-            new_start_node=cur_node
-            cur_node.parent=None
-            priority_queue = []
-            visited = set()
-            heappush(priority_queue, new_start_node)
-
-            continue
-
-        visited.add(cur_node.location)
-
-        neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
-        # 갈 수 있는 곳
-        for neighbor in neighbors:
-            # 방문할 수 있는 이웃 정점
-            next_node = Node(cur_node, neighbor)
-            # cur를 바로전에 방문했을 것이다
-            next_node.g = cur_node.g + 1
-            next_node.h = manhattan_dist(neighbor, cur_goal_point)
-            next_node.f = next_node.g+next_node.h
-            next_node.obj=cur_node.obj
-            heappush(priority_queue, next_node)
-        #print(path)
-    return path
+    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
 
 def astar_four_circles(maze):
@@ -298,7 +222,7 @@ def astar_four_circles(maze):
             next_node.f = next_node.g+next_node.h
             next_node.obj=cur_node.obj
             heappush(priority_queue, next_node)
-    #print(path)
+    print(path)
     return path
     ############################################################################
 
