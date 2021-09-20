@@ -234,7 +234,7 @@ def astar_four_circles(maze):
     #모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal사이의 거리
     #휴리스틱 함수에서 사용하며, 나중에 모든 goal들 각각 간의 경로도 구해 놓는 식으로 전처리 최적화 가능
     #일단은 거리만 구해놓고 경로는 나중에 온라인으로 구하자
-    print(end_points)
+    #print(end_points)
     for goal_idx in range(len(end_points)):
         goal=end_points[goal_idx]
         bfs_start_node=Node(None, goal)
@@ -276,7 +276,7 @@ def astar_four_circles(maze):
                 next_node=Node(cur_node, next_point)
                 next_node.g=cur_node.g+1
                 q.appendleft(next_node)
-    print(all_goal_dist)
+    #print(all_goal_dist)
 
 
     pq=[]
@@ -317,7 +317,7 @@ def astar_four_circles(maze):
             #pq 초기화. 만약 중복해서 지나야 하는 goal 이 있다면 pq 초기화를 안해야함.
             #stage3을 이걸로 할거면 pq=[]부분 주석처리
             cur_node.obj.append(cur_node.location)
-            print(cur_node.obj)
+            #print(cur_node.obj)
             if set(cur_node.obj)==set(end_points):
                 # 모든 목표를 방문했으면 끝내야 한다
                 break
