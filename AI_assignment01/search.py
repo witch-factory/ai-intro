@@ -433,6 +433,7 @@ def astar_many_circles(maze):
 
     ####################### Write Your Code Here ################################
     start_point=maze.startPoint()
+    path.append(start_point)
     all_goal_dist = [[0 for j in range(len(end_points) + 1)] for i in range(len(end_points) + 1)]
     # 모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal사이의 거리
 
@@ -484,9 +485,8 @@ def astar_many_circles(maze):
 
     edges.sort()
 
-    cur_node=Node(None, start_point)
-    print(mst(cur_node, end_points, all_goal_dist))
-    print(stage3_heuristic(cur_node, end_points, all_goal_dist))
+    #print(mst(cur_node, end_points, all_goal_dist))
+    #print(stage3_heuristic(cur_node, end_points, all_goal_dist))
 
     pq = []
     visited = set()
@@ -503,14 +503,14 @@ def astar_many_circles(maze):
         print(end_point, stage2_heuristic(goal_node, end_points, all_goal_dist))"""
 
     while set(cur_node.obj) != set(end_points) and pq:
+        #print(visited)
         cur_node = heappop(pq)
         if cur_node.location in visited:
-            continue
-        if cur_node.location in cur_node.obj:
+            # 이미 방문한 노드일 경우 스킵
             continue
 
         if cur_node.location in end_points and cur_node.location not in cur_node.obj:
-            # 목표에 도달했으며, 아직 방문하지 않은 목표일 경우
+            # 목표에 도달했으며, 아직 방문하지 않은 목표일 경우 경로를 저장해 준다
             # 이미 방문한 목표인 경우에는 신경쓰지 않고 지나가야 함
             track = cur_node
             temp_path = []
@@ -521,7 +521,7 @@ def astar_many_circles(maze):
             path.extend(temp_path)
             visited = set()
             cur_node.parent = None
-            #pq = []
+            pq = []
             # 지금까지 거쳐온 경로는 저장
             # pq 초기화. 만약 중복해서 지나야 하는 goal 이 있다면 pq 초기화를 안해야함.
             # stage3을 이걸로 할거면 pq=[]부분 주석처리
@@ -541,6 +541,7 @@ def astar_many_circles(maze):
                 next_node.g = cur_node.g + 1
                 next_node.h = stage3_heuristic(next_node, end_points, all_goal_dist)
                 next_node.f = next_node.g + next_node.h
+                #print(next_node.h)
                 heappush(pq, next_node)
 
             """new_start_node = cur_node
@@ -566,7 +567,7 @@ def astar_many_circles(maze):
             heappush(pq, next_node)
             # print(next_node.location, next_node.h)
     print(path)
-    #print(maze.isValidPath(path))
+    print(maze.isValidPath(path))
 
 
 
