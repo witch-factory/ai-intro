@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 ###### Write Your Library Here ###########
 from collections import deque
-from collections import defaultdict
 import copy
 from heapq import *
 
@@ -407,48 +406,46 @@ def mst(cur_node, end_points, all_goal_dist):
     print("")"""
     return mst_edges
 
-class treeNode:
-    # 트리의 한 정점을 나타내는 구조체 - preorder를 위해 제작
-    def __init__(self, key):
-        self.key=key
-        self.child=[]
 
-def preorder(root):
+
+def preorder(root, adj_list):
+    # preorder make same result to dfs in tree
     nodes=deque([root])
+    # dfs by stack
     order=[]
-
-    while(nodes):
-        cur=nodes[0]
-        nodes.popleft()
-        order.append(cur.key)
-
-        child_len=len(cur.child)
-        for it in range(child_len-1,-1,-1):
-            nodes.appendleft(cur.child[it])
+    visited=set()
+    visited.add(root)
+    while nodes:
+        cur=nodes.pop()
+        order.append(cur)
+        for next in adj_list[cur]:
+            if next in visited:continue
+            visited.add(next)
+            nodes.append(next)
     return order
 
 
 def mst_euler_path_cost(mst_edges, root, all_goal_dist):
     cost_sum=0
-    #construct the tree
-    queue=deque([root])
-    visited=set()
-    while queue:
-        cur=queue.pop()
-        if cur.key in visited:continue
-        visited.add(cur.key)
-        for E in mst_edges:
-            if E.start==cur.key:
-                cur.child.append(E.end)
-                queue.appendleft(treeNode(E.end))
-            elif E.end==cur.key:
-                cur.child.append(treeNode(E.start))
+    #construct the tree by adjacency list
 
-    pre=preorder(root)
+    vertex_num = len(all_goal_dist)
+    """for E in mst_edges:
+        vertex_num = max(vertex_num, E.start, E.end)
+    vertex_num += 1"""
+
+    adj_list = [[] for i in range(vertex_num)]
+
+    for E in mst_edges:
+        adj_list[E.start].append(E.end)
+        adj_list[E.end].append(E.start)
+    #print(adj_list)
+    pre=preorder(root, adj_list)
+    #print(pre)
     preorder_length=len(pre)
     for i in range(1,preorder_length):
-        cost_sum+=all_goal_dist[i-1][i]
-
+        cost_sum+=all_goal_dist[pre[i-1]][pre[i]]
+    # preorder순서대로 따라가면서 거리를 더해준다
     return cost_sum
 
 
@@ -456,18 +453,22 @@ def mst_euler_path_cost(mst_edges, root, all_goal_dist):
 
 
 def stage3_heuristic(cur_node, end_points, all_goal_dist):
-    mst_cost=mst(cur_node, end_points, all_goal_dist)
+    unvisited_goals=[end_point for end_point in end_points if end_point not in cur_node.obj]
 
-    nearest_goal_dist=None
-    # 물론 이걸 bfs를 통해 찾는 방식으로 더 정확한 *제일 가까운 목표까지의 거리*를 계산할 수도 있다
-    for goal in end_points:
-        if goal not in cur_node.obj:
-            if nearest_goal_dist==None:
-                nearest_goal_dist=manhattan_dist(goal, cur_node.location)
-            else:
-                nearest_goal_dist=min(nearest_goal_dist, manhattan_dist(goal, cur_node.location))
-            #아직 방문 안 한 목표들 중 가장 가까운 것과의 맨해튼 거리를 뽑아낸다
-    dist=mst_cost+nearest_goal_dist
+    nearest_goal=None
+    for goal in unvisited_goals:
+        if nearest_goal==None:
+            nearest_goal=goal
+        else:
+            if manhattan_dist(goal, cur_node.location)<manhattan_dist(nearest_goal, cur_node.location):
+                nearest_goal=goal
+
+    dist_to_goal=manhattan_dist(nearest_goal, cur_node.location)
+    # 현재 위치에서 그 목표까지의 맨해튼 거리
+    mst_edges=mst(cur_node, end_points, all_goal_dist)
+    mst_cost=mst_euler_path_cost(mst_edges, end_points.index(nearest_goal), all_goal_dist)
+    dist=dist_to_goal+mst_cost
+    #print(dist)
     return dist
 
 
@@ -480,7 +481,7 @@ def astar_many_circles(maze):
 
     end_points= maze.circlePoints()
     end_points.sort()
-
+    print(end_points)
     path=[]
 
     ####################### Write Your Code Here ################################
@@ -537,7 +538,9 @@ def astar_many_circles(maze):
     # 간선들을 모두 뽑아서 리스트 만들기 - mst 제작을 위해서
     edges.sort()
 
-    print(mst(cur_node, end_points, all_goal_dist))
+    mst_edges=mst(cur_node, end_points, all_goal_dist)
+    """for E in mst_edges:
+        print(E.start, E.end, E.cost)"""
     #print(stage3_heuristic(cur_node, end_points, all_goal_dist))
 
     pq = []
