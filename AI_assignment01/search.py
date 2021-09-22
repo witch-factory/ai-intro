@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ###### Write Your Library Here ###########
-import collections
+from collections import deque
+from collections import defaultdict
 import copy
 from heapq import *
 
@@ -28,7 +29,7 @@ def bfs(maze):
     end_point=maze.circlePoints()[0]
     path = []
     ####################### Write Your Code Here ################################
-    q = collections.deque([start_point])
+    q = deque([start_point])
     prev_visited={start_point:(-1, -1)}
     cur_point=start_point
     #이전에 방문했던 점을 저장해 놓으면 경로를 역추적 가능하다
@@ -206,7 +207,7 @@ def astar_four_circles(maze):
     for goal_idx in range(len(end_points)):
         goal=end_points[goal_idx]
         bfs_start_node=Node(None, goal)
-        q=collections.deque([bfs_start_node])
+        q=deque([bfs_start_node])
         # 각 goal에서 시작한다
         #prev_visited = {goal: (-1, -1)}
         #cur_point = goal
@@ -356,7 +357,7 @@ def mst(cur_node, end_points, all_goal_dist):
 
     cost_sum=0
     ####################### Write Your Code Here ################################
-    parent = [i for i in range(len(end_points) + 1)]  # 모든 정점의 루트를 자기 자신으로
+    parent = [i for i in range(len(end_points))]  # 모든 정점의 루트를 자기 자신으로
 
     def Find(a):
         if a==parent[a]:return a
@@ -375,32 +376,83 @@ def mst(cur_node, end_points, all_goal_dist):
     #merge 성공시 1
 
     unvisited_goal_num=len(end_points)-len(cur_node.obj)
-
+    goal_num=len(end_points)
+    # 아직 방문 안한 목표들 개수
     edges = []
-    for i in range(len(end_points)):
+    for i in range(goal_num):
         if end_points[i] in cur_node.obj:continue
-        for j in range(len(end_points)):
+        for j in range(goal_num):
             if i == j: continue
             if end_points[j] in cur_node.obj: continue
             # 이미 방문한 정점에 대한 간선이면 mst에 넣을 필요가 없다
-            edges.append(Edge(i, j, all_goal_dist[i+1][j+1]))
-            # end_point의 인덱스는 0부터고 거리를 따지는 인덱스는 1부터다
+            edges.append(Edge(i, j, all_goal_dist[i][j]))
+            # end_point의 인덱스는 0부터
 
     edges.sort()
 
     cnt=0
     edge_num=len(edges)
+    mst_edges=[]
+    #mst에 들어가는 간선들을 저장한다
     for i in range(edge_num):
         if merge(edges[i].start, edges[i].end):
+            mst_edges.append(edges[i])
             cost_sum+=edges[i].cost
             cnt+=1
             if cnt==unvisited_goal_num-1:
                 break
                 # n-1개의 간선이 모이면 mst가 된다
+    """for E in mst_edges:
+        print(E.start, E.end, E.cost)
+    print("")"""
+    return mst_edges
+
+class treeNode:
+    # 트리의 한 정점을 나타내는 구조체 - preorder를 위해 제작
+    def __init__(self, key):
+        self.key=key
+        self.child=[]
+
+def preorder(root):
+    nodes=deque([root])
+    order=[]
+
+    while(nodes):
+        cur=nodes[0]
+        nodes.popleft()
+        order.append(cur.key)
+
+        child_len=len(cur.child)
+        for it in range(child_len-1,-1,-1):
+            nodes.appendleft(cur.child[it])
+    return order
+
+
+def mst_euler_path_cost(mst_edges, root, all_goal_dist):
+    cost_sum=0
+    #construct the tree
+    queue=deque([root])
+    visited=set()
+    while queue:
+        cur=queue.pop()
+        if cur.key in visited:continue
+        visited.add(cur.key)
+        for E in mst_edges:
+            if E.start==cur.key:
+                cur.child.append(E.end)
+                queue.appendleft(treeNode(E.end))
+            elif E.end==cur.key:
+                cur.child.append(treeNode(E.start))
+
+    pre=preorder(root)
+    preorder_length=len(pre)
+    for i in range(1,preorder_length):
+        cost_sum+=all_goal_dist[i-1][i]
 
     return cost_sum
 
-    ############################################################################
+
+############################################################################
 
 
 def stage3_heuristic(cur_node, end_points, all_goal_dist):
@@ -434,14 +486,14 @@ def astar_many_circles(maze):
     ####################### Write Your Code Here ################################
     start_point=maze.startPoint()
     path.append(start_point)
-    all_goal_dist = [[0 for j in range(len(end_points) + 1)] for i in range(len(end_points) + 1)]
+    all_goal_dist = [[0 for j in range(len(end_points))] for i in range(len(end_points))]
     # 모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal사이의 거리
 
     for goal_idx in range(len(end_points)):
-        # 모든 노드들 간의 거리 구하기
+        # 모든 목표 노드들 간의 거리 구하기
         goal=end_points[goal_idx]
         bfs_start_node=Node(None, goal)
-        q=collections.deque([bfs_start_node])
+        q=deque([bfs_start_node])
         # 각 goal에서 시작한다
         visited_goal=set()
         left_goal=set()
@@ -470,22 +522,22 @@ def astar_many_circles(maze):
                         path_between_goal.append(track)
                         # print(track)
                         track = prev_visited[track]"""
-                    all_goal_dist[end_points.index(next_point)+1][goal_idx+1]=cur_node.g+1
-                    all_goal_dist[goal_idx+1][end_points.index(next_point)+1]=cur_node.g+1
+                    all_goal_dist[end_points.index(next_point)][goal_idx]=cur_node.g+1
+                    all_goal_dist[goal_idx][end_points.index(next_point)]=cur_node.g+1
                 next_node=Node(cur_node, next_point)
                 next_node.g=cur_node.g+1
                 q.appendleft(next_node)
     #print(all_goal_dist)
 
     edges=[]
-    for i in range(1,len(end_points)+1):
-        for j in range(1, len(end_points) + 1):
+    for i in range(len(end_points)):
+        for j in range(len(end_points)):
             if i==j:continue
             edges.append(Edge(i,j,all_goal_dist[i][j]))
-
+    # 간선들을 모두 뽑아서 리스트 만들기 - mst 제작을 위해서
     edges.sort()
 
-    #print(mst(cur_node, end_points, all_goal_dist))
+    print(mst(cur_node, end_points, all_goal_dist))
     #print(stage3_heuristic(cur_node, end_points, all_goal_dist))
 
     pq = []
