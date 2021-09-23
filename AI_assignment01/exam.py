@@ -1,6 +1,5 @@
 from collections import deque
-import networkx as nx
-import networkx.algorithms.approximation
+from copy import *
 
 
 class Edge:
@@ -108,28 +107,7 @@ def mst_euler_path_cost(mst_edges, root):
     pre = preorder(root, adj_list)
     return pre
 
-l=[[3,2,1], [2,3,1]]
-
-for it in l:
-    it.sort()
-
-for it in l:
-    print(it)
-
-"""edges = [
-    Edge(0, 1, 1),
-    Edge(2, 3, 1),
-    Edge(5, 7, 1),
-    Edge(6, 9, 1),
-    Edge(1, 4, 3),
-    Edge(2, 4, 3),
-    Edge(3, 6, 3),
-    Edge(4, 8, 4),
-    Edge(4, 5, 5)
-]
-
-mst_edges = mst(10, edges)
-for E in mst_edges:
-    print(E.start, E.end, E.cost)
-
-print(mst_euler_path_cost(mst_edges, 0))"""
+cur=treeNode(1)
+next=deepcopy(cur)
+next.child.append(1)
+print(cur.child, next.child)

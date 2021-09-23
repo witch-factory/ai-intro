@@ -2,7 +2,8 @@
 ###### Write Your Library Here ###########
 from collections import deque
 from heapq import *
-
+from copy import *
+from functools import lru_cache
 
 #########################################
 
@@ -342,11 +343,16 @@ class Edge:
     def __le__(self, other):
         return self.cost <= other.cost
 
+mst_cache={}
 
 def mst(cur_node, end_points, all_goal_dist):
     cost_sum = 0
     ####################### Write Your Code Here ################################
-    parent = [i for i in range(len(end_points))]  # 모든 정점의 루트를 자기 자신으로
+    if frozenset(cur_node.obj) in mst_cache:
+        return mst_cache[frozenset(cur_node.obj)]
+
+    end_len=len(end_points)
+    parent = [i for i in range(end_len)]  # 모든 정점의 루트를 자기 자신으로
 
     def Find(a):
         if a == parent[a]:
@@ -368,14 +374,15 @@ def mst(cur_node, end_points, all_goal_dist):
 
     unvisited_goal_num = len(end_points) - len(cur_node.obj)
     goal_num = len(end_points)
+    cur_obj=cur_node.obj
     # 아직 방문 안한 목표들 개수
     edges = []
     for i in range(goal_num):
         # 방문하지 않은 정점에 대한 edge들을 모두 저장한다
-        if end_points[i] in cur_node.obj: continue
+        if end_points[i] in cur_obj: continue
         for j in range(goal_num):
             if i == j: continue
-            if end_points[j] in cur_node.obj: continue
+            if end_points[j] in cur_obj: continue
             # 이미 방문한 정점에 대한 간선이면 mst에 넣을 필요가 없다
             edges.append(Edge(i, j, all_goal_dist[i][j]))
             # end_point의 인덱스는 0부터
@@ -389,7 +396,7 @@ def mst(cur_node, end_points, all_goal_dist):
     for i in range(edge_num):
         s = edges[i].start
         e = edges[i].end
-        if s == Find(s) and e == Find(e) and merge(s, e):
+        if merge(s, e):
             # 끝끼리 병합할 때만 합쳐준다
             mst_edges.append(edges[i])
             cost_sum += edges[i].cost
@@ -397,7 +404,10 @@ def mst(cur_node, end_points, all_goal_dist):
             if cnt == unvisited_goal_num - 1:
                 break
                 # n-1개의 간선이 모이면 mst가 된다
-    return mst_edges
+
+    mst_cache[frozenset(cur_node.obj)]=cost_sum
+    # 캐싱
+    return cost_sum
 
 
 def preorder(root, adj_list):
@@ -444,9 +454,15 @@ def mst_euler_path_cost(mst_edges, root, all_goal_dist):
 
 ############################################################################
 
+heuristic_cache={}
 
 def stage3_heuristic(cur_node, end_points, all_goal_dist):
-    unvisited_goals = [end_point for end_point in end_points if end_point not in cur_node.obj]
+    if frozenset(cur_node.obj) in heuristic_cache:
+        return heuristic_cache[frozenset(cur_node.obj)]
+
+    cur_obj=set(cur_node.obj)
+    unvisited_goals = [end_point for end_point in end_points if end_point not in cur_obj]
+    #print(unvisited_goals)
     # mst는 미리 구성해둔다. 중요한 건 어떤 노드에서 tour를 시작하는가 하는 것
     nearest_goal = None
     for goal in unvisited_goals:
@@ -458,9 +474,11 @@ def stage3_heuristic(cur_node, end_points, all_goal_dist):
 
     dist_to_goal = manhattan_dist(nearest_goal, cur_node.location)
     # 현재 위치에서 그 목표까지의 맨해튼 거리
-    mst_edges = mst(cur_node, end_points, all_goal_dist)
-    mst_cost = mst_euler_path_cost(mst_edges, end_points.index(nearest_goal), all_goal_dist)
+    mst_cost = mst(cur_node, end_points, all_goal_dist)
+    #mst_cost = mst_euler_path_cost(mst_edges, end_points.index(nearest_goal), all_goal_dist)
     dist = dist_to_goal + mst_cost
+    # 남은 휴리스틱 거리에 가중치를 좀 준다
+    heuristic_cache[frozenset(cur_node.obj)]=dist
     return dist
 
 
@@ -477,7 +495,7 @@ def astar_many_circles(maze):
 
     ####################### Write Your Code Here ################################
     start_point = maze.startPoint()
-    path.append(start_point)
+    #path.append(start_point)
     all_goal_dist = [[0 for j in range(len(end_points))] for i in range(len(end_points))]
     # 모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal사이의 거리
     end_len = len(end_points)
@@ -520,52 +538,64 @@ def astar_many_circles(maze):
                 next_node = Node(cur_node, next_point)
                 next_node.g = cur_node.g + 1
                 q.appendleft(next_node)
-
+    # 모든 목표들 간의 거리를 계산해 놓는다. (0~목표개수-1 까지 번호 매겨둠)
     # print(all_goal_dist)
 
     pq = []
-    visited = set()
+    visited = {}
+    prev_visited={}
+    goal_visit_count={start_point:0}
+    # 그 점에서 goal을 몇 개 지나봤는지를 체크한다
+    # 시작점은 아무 목표도 지나지 않았음
     start_node = Node(None, start_point)
     start_node.h = stage3_heuristic(start_node, end_points, all_goal_dist)
     start_node.f = start_node.g + start_node.h
     # 시작 노드의 휴리스틱 거리
     heappush(pq, start_node)
     cur_node = start_node
+    cur_path_len=None
 
     # 거리 디버깅
     """for end_point in end_points:
         goal_node=Node(None, end_point)
         print(end_point, stage2_heuristic(goal_node, end_points, all_goal_dist))"""
 
-    while set(cur_node.obj) != set(end_points) and pq:
-        # print(visited)
+    while pq and set(cur_node.obj) != set(end_points):
+        #print(visited)
         cur_node = heappop(pq)
-        if cur_node.location in visited:
-            # 이미 방문한 노드일 경우
-
+        if cur_path_len is not None and cur_node.g>=cur_path_len:
             continue
-
+        # 현재의 최단경로보다 길게 가야 하는 건 탐색할 필요도 없다
         if cur_node.location in end_points and cur_node.location not in cur_node.obj:
-            # 목표에 도달했으며, 아직 방문하지 않은 목표일 경우 경로를 저장해 준다
-            # 이미 방문한 목표인 경우에는 신경쓰지 않고 지나가야 함
-            track = cur_node
-            temp_path = []
-            while track.parent is not None:
-                temp_path.append(track.location)
-                track = track.parent
-            temp_path.reverse()
-            path.extend(temp_path)
-            visited = set()
-            cur_node.parent = None
-            pq = []
-            # 지금까지 거쳐온 경로는 저장
-            # pq 초기화. 만약 중복해서 지나야 하는 goal 이 있다면 pq 초기화를 안해야함.
-            # stage3을 이걸로 할거면 pq=[]부분 주석처리
+            # 아직 방문 안 한 목표임
             cur_node.obj.append(cur_node.location)
-            # print(cur_node.obj)
+            #visited[(cur_node.location, frozenset(cur_node.obj))] = cur_node.g
             if set(cur_node.obj) == set(end_points):
-                # 모든 목표를 방문했으면 끝내야 한다
-                break
+                print(cur_node.obj)
+                if cur_path_len is None or cur_path_len>cur_node.g:
+                    cur_path_len=cur_node.g
+                    # g가 지금까지 온 거리를 담고 있다
+                    temp_path = []
+                    track = cur_node
+
+                    while track is not None:
+                        # print(track.location)
+                        temp_path.append(track.location)
+                        track = track.parent
+                    path=temp_path
+
+                continue
+
+        #print(cur_node.obj)
+
+        if (cur_node.location, frozenset(cur_node.obj)) not in visited\
+            or visited[(cur_node.location, frozenset(cur_node.obj))]>cur_node.g:
+            # 아직 나온 적이 없는 상태이거나 더 빠르게 갈 수 있다
+            visited[(cur_node.location, frozenset(cur_node.obj))]=cur_node.g
+            #prev_visited[(cur_node.location, frozenset(cur_node.obj))]=cur_node.parent
+
+            """if set(cur_node.obj)==set(end_points):
+                continue"""
 
             neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
             # 갈 수 있는 곳
@@ -573,36 +603,18 @@ def astar_many_circles(maze):
                 # 방문할 수 있는 이웃 정점
                 next_node = Node(cur_node, neighbor)
                 # cur를 바로전에 방문했을 것이다
-                next_node.obj = cur_node.obj
+                next_node.obj = cur_node.obj[:]
                 next_node.g = cur_node.g + 1
+                #print(next_node.obj)
                 next_node.h = stage3_heuristic(next_node, end_points, all_goal_dist)
                 next_node.f = next_node.g + next_node.h
                 # print(next_node.h)
                 heappush(pq, next_node)
 
-            """new_start_node = cur_node
-            cur_node.parent = None
-            pq = []
-            visited = set()
-            heappush(pq, new_start_node)"""
 
-            continue
-
-        visited.add(cur_node.location)
-
-        neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
-        # 갈 수 있는 곳
-        for neighbor in neighbors:
-            # 방문할 수 있는 이웃 정점
-            next_node = Node(cur_node, neighbor)
-            # cur를 바로전에 방문했을 것이다
-            next_node.obj = cur_node.obj
-            next_node.g = cur_node.g + 1
-            next_node.h = stage3_heuristic(next_node, end_points, all_goal_dist)
-            next_node.f = next_node.g + next_node.h
-            heappush(pq, next_node)
-            # print(next_node.location, next_node.h)
-
+    path=path[::-1]
+    #print(path)
+    #print(maze.isValidPath(path))
     return path
 
     ############################################################################
