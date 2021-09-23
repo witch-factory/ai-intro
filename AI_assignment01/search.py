@@ -2,8 +2,6 @@
 ###### Write Your Library Here ###########
 from collections import deque
 from heapq import *
-from copy import *
-from functools import lru_cache
 
 #########################################
 
@@ -173,7 +171,8 @@ def stage2_heuristic(node, end_points, dist_between_goals):
             all_visit_cost += dist_between_goals[end_points.index(cur_goal) + 1][end_points.index(next_goal) + 1]
             cur_goal = next_goal
         candidate_dist = all_visit_cost + manhattan_dist(candidate, node.location)
-        # 그 candidate에서 다른 모든 목표를 방문해 주는 데에 얼마나 걸리는지 + 현위치에서 그 candidate까지 얼마나 걸리는지의 맨해튼거리
+        # 그 candidate에서 다른 모든 목표를 방문해 주는 데에 얼마나 걸리는지 +
+        # 현위치에서 그 candidate까지 얼마나 걸리는지의 맨해튼거리
         candidate_dists.append(candidate_dist)
     dist = min(candidate_dists)
 
@@ -225,16 +224,9 @@ def astar_four_circles(maze):
                 if next_point in visited:
                     continue
                 visited.add(next_point)
-                # print(next_point)
+
                 if maze.isObjective(next_point[0], next_point[1]):
-                    # path_between_goal=[]
                     visited_goal.add(next_point)
-                    # visited=set()
-                    track = next_point
-                    """while track != (-1, -1):
-                        path_between_goal.append(track)
-                        # print(track)
-                        track = prev_visited[track]"""
                     all_goal_dist[end_points.index(next_point) + 1][goal_idx + 1] = cur_node.g + 1
                     all_goal_dist[goal_idx + 1][end_points.index(next_point) + 1] = cur_node.g + 1
                 next_node = Node(cur_node, next_point)
@@ -250,11 +242,6 @@ def astar_four_circles(maze):
     # 시작 노드의 휴리스틱 거리
     heappush(pq, start_node)
     cur_node = start_node
-
-    # 거리 디버깅
-    """for end_point in end_points:
-        goal_node=Node(None, end_point)
-        print(end_point, stage2_heuristic(goal_node, end_points, all_goal_dist))"""
 
     while set(cur_node.obj) != set(end_points) and pq:
         cur_node = heappop(pq)
@@ -280,7 +267,6 @@ def astar_four_circles(maze):
             # pq 초기화. 만약 중복해서 지나야 하는 goal 이 있다면 pq 초기화를 안해야함.
             # stage3을 이걸로 할거면 pq=[]부분 주석처리
             cur_node.obj.append(cur_node.location)
-            # print(cur_node.obj)
             if set(cur_node.obj) == set(end_points):
                 # 모든 목표를 방문했으면 끝내야 한다
                 break
@@ -291,17 +277,11 @@ def astar_four_circles(maze):
                 # 방문할 수 있는 이웃 정점
                 next_node = Node(cur_node, neighbor)
                 # cur를 바로전에 방문했을 것이다
-                next_node.obj = cur_node.obj
+                next_node.obj = cur_node.obj[:]
                 next_node.g = cur_node.g + 1
                 next_node.h = stage2_heuristic(next_node, end_points, all_goal_dist)
                 next_node.f = next_node.g + next_node.h
                 heappush(pq, next_node)
-
-            """new_start_node = cur_node
-            cur_node.parent = None
-            pq = []
-            visited = set()
-            heappush(pq, new_start_node)"""
 
             continue
 
@@ -313,7 +293,7 @@ def astar_four_circles(maze):
             # 방문할 수 있는 이웃 정점
             next_node = Node(cur_node, neighbor)
             # cur를 바로전에 방문했을 것이다
-            next_node.obj = cur_node.obj
+            next_node.obj = cur_node.obj[:]
             next_node.g = cur_node.g + 1
             next_node.h = stage2_heuristic(next_node, end_points, all_goal_dist)
             next_node.f = next_node.g + next_node.h
@@ -407,48 +387,6 @@ def mst(cur_node, end_points, all_goal_dist):
 
     mst_cache[frozenset(cur_node.obj)]=cost_sum
     # 캐싱
-    return cost_sum
-
-
-def preorder(root, adj_list):
-    # preorder make same result to dfs in tree
-    nodes = deque([root])
-    # dfs by stack
-    order = []
-    visited = set()
-    visited.add(root)
-    while nodes:
-        cur = nodes.pop()
-        order.append(cur)
-        for next in adj_list[cur]:
-            if next in visited: continue
-            visited.add(next)
-            nodes.append(next)
-    return order
-
-
-def mst_euler_path_cost(mst_edges, root, all_goal_dist):
-    cost_sum = 0
-    # construct the tree by adjacency list
-
-    vertex_num = len(all_goal_dist)
-
-    adj_list = [[] for i in range(vertex_num)]
-    """adj_len=len(adj_list)
-    for i in range(adj_len):
-        adj_list[i].sort(key=lambda x:all_goal_dist[i][x])"""
-
-    for E in mst_edges:
-        adj_list[E.start].append(E.end)
-        adj_list[E.end].append(E.start)
-
-    # print(adj_list)
-    pre = preorder(root, adj_list)
-    #print(pre)
-    preorder_length = len(pre)
-    for i in range(1, preorder_length):
-        cost_sum += all_goal_dist[pre[i - 1]][pre[i]]
-    # preorder 순서대로 따라가면서 거리를 더해준다
     return cost_sum
 
 
@@ -563,8 +501,8 @@ def astar_many_circles(maze):
     while pq and set(cur_node.obj) != set(end_points):
         #print(visited)
         cur_node = heappop(pq)
-        """if cur_path_len is not None and cur_node.g>=cur_path_len:
-            continue"""
+        if cur_path_len is not None and cur_node.g>=cur_path_len:
+            continue
         # 현재의 최단경로보다 길게 가야 하는 건 탐색할 필요도 없다
         if cur_node.location in end_points and cur_node.location not in cur_node.obj:
             # 아직 방문 안 한 목표임
