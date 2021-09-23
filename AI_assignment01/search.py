@@ -563,15 +563,15 @@ def astar_many_circles(maze):
     while pq and set(cur_node.obj) != set(end_points):
         #print(visited)
         cur_node = heappop(pq)
-        if cur_path_len is not None and cur_node.g>=cur_path_len:
-            continue
+        """if cur_path_len is not None and cur_node.g>=cur_path_len:
+            continue"""
         # 현재의 최단경로보다 길게 가야 하는 건 탐색할 필요도 없다
         if cur_node.location in end_points and cur_node.location not in cur_node.obj:
             # 아직 방문 안 한 목표임
             cur_node.obj.append(cur_node.location)
             #visited[(cur_node.location, frozenset(cur_node.obj))] = cur_node.g
             if set(cur_node.obj) == set(end_points):
-                print(cur_node.obj)
+                #print(cur_node.obj)
                 if cur_path_len is None or cur_path_len>cur_node.g:
                     cur_path_len=cur_node.g
                     # g가 지금까지 온 거리를 담고 있다
@@ -583,7 +583,7 @@ def astar_many_circles(maze):
                         temp_path.append(track.location)
                         track = track.parent
                     path=temp_path
-
+                # 만약 다 돌았다면 그냥 넘어간다
                 continue
 
         #print(cur_node.obj)
