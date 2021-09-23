@@ -318,7 +318,6 @@ def astar_four_circles(maze):
             next_node.f = next_node.g + next_node.h
             heappush(pq, next_node)
             # print(next_node.location, next_node.h)
-    print(path)
     return path
 
     ############################################################################
@@ -398,9 +397,6 @@ def mst(cur_node, end_points, all_goal_dist):
             if cnt == unvisited_goal_num - 1:
                 break
                 # n-1개의 간선이 모이면 mst가 된다
-    """for E in mst_edges:
-        print(E.start, E.end, E.cost)
-    print("")"""
     return mst_edges
 
 
@@ -428,6 +424,9 @@ def mst_euler_path_cost(mst_edges, root, all_goal_dist):
     vertex_num = len(all_goal_dist)
 
     adj_list = [[] for i in range(vertex_num)]
+    """adj_len=len(adj_list)
+    for i in range(adj_len):
+        adj_list[i].sort(key=lambda x:all_goal_dist[i][x])"""
 
     for E in mst_edges:
         adj_list[E.start].append(E.end)
@@ -435,11 +434,11 @@ def mst_euler_path_cost(mst_edges, root, all_goal_dist):
 
     # print(adj_list)
     pre = preorder(root, adj_list)
-    # print(pre)
+    #print(pre)
     preorder_length = len(pre)
     for i in range(1, preorder_length):
         cost_sum += all_goal_dist[pre[i - 1]][pre[i]]
-    # preorder순서대로 따라가면서 거리를 더해준다
+    # preorder 순서대로 따라가면서 거리를 더해준다
     return cost_sum
 
 
@@ -524,19 +523,6 @@ def astar_many_circles(maze):
 
     # print(all_goal_dist)
 
-    edges = []
-    for i in range(len(end_points)):
-        for j in range(len(end_points)):
-            if i == j: continue
-            edges.append(Edge(i, j, all_goal_dist[i][j]))
-    # 간선들을 모두 뽑아서 리스트 만들기 - mst 제작을 위해서
-    edges.sort()
-
-    """mst_edges=mst(cur_node, end_points, all_goal_dist)
-    for E in mst_edges:
-        print(E.start, E.end, E.cost)"""
-    # print(stage3_heuristic(cur_node, end_points, all_goal_dist))
-
     pq = []
     visited = set()
     start_node = Node(None, start_point)
@@ -555,7 +541,8 @@ def astar_many_circles(maze):
         # print(visited)
         cur_node = heappop(pq)
         if cur_node.location in visited:
-            # 이미 방문한 노드일 경우 스킵
+            # 이미 방문한 노드일 경우
+
             continue
 
         if cur_node.location in end_points and cur_node.location not in cur_node.obj:
@@ -615,8 +602,6 @@ def astar_many_circles(maze):
             next_node.f = next_node.g + next_node.h
             heappush(pq, next_node)
             # print(next_node.location, next_node.h)
-    # print(path)
-    # print(maze.isValidPath(path))
 
     return path
 
