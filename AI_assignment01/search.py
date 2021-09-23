@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 ###### Write Your Library Here ###########
 from collections import deque
-import copy
 from heapq import *
 
 
@@ -111,7 +110,8 @@ def astar(maze):
     # start 노드부터 시작
     while priority_queue:
         cur = heappop(priority_queue)
-        if cur.location in visited: continue
+        if cur.location in visited:
+            continue
         if cur.location == end_point:
             # 목적지에 도착
             track = cur
@@ -119,8 +119,7 @@ def astar(maze):
                 path.append(track.location)
                 track = track.parent
             path = path[::-1]
-            # reverse the list to gain the right path
-            # print(path)
+            # 시작점부터 시작하는 경로를 얻기 위해 리스트를 뒤집어 준다
             break
 
         visited.add(cur.location)
@@ -130,7 +129,7 @@ def astar(maze):
         for neighbor in neighbors:
             # 방문할 수 있는 이웃 정점
             new_node = Node(cur, neighbor)
-            # cur를 바로전에 방문했을 것이다
+            # cur 를 바로전에 방문했을 것이다
             new_node.g = cur.g + 1
             new_node.h = manhattan_dist(neighbor, end_point)
             new_node.f = new_node.g + new_node.h
@@ -144,15 +143,13 @@ def astar(maze):
 
 
 def stage2_heuristic(node, end_points, dist_between_goals):
-    dist = 0
-
     candidate_dists = []
     for candidate in end_points:
         # 모든 정점을 한번씩 방문해 보고, 그 순서 중에 최소 비용
         # 일단 제일 먼저 방문할 정점을 잡고 나면 그리디하게 접근함
         visited_goals = set(node.obj)
         visited_goals.add(candidate)
-        # 모든 goal을 다 방문할 때까지의 거리를 구해야 한다
+        # 모든 goal 을 다 방문할 때까지의 거리를 구해야 한다
         cur_goal = candidate
         all_visit_cost = 0
         # 아직 안 방문한 모든 정점을 방문하는 데에 드는 비용
@@ -197,8 +194,8 @@ def astar_four_circles(maze):
     start_point = maze.startPoint()
     path.append(start_point)
     all_goal_dist = [[0 for j in range(len(end_points) + 1)] for i in range(len(end_points) + 1)]
-    # 모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal사이의 거리
-    # 휴리스틱 함수에서 사용하며, 나중에 모든 goal들 각각 간의 경로도 구해 놓는 식으로 전처리 최적화 가능
+    # 모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal 사이의 거리
+    # 휴리스틱 함수에서 사용하며, 나중에 모든 goal 들 각각 간의 경로도 구해 놓는 식으로 전처리 최적화 가능
     # 일단은 거리만 구해놓고 경로는 나중에 온라인으로 구하자
     # print(end_points)
     for goal_idx in range(len(end_points)):
@@ -391,9 +388,9 @@ def mst(cur_node, end_points, all_goal_dist):
     mst_edges = []
     # mst에 들어가는 간선들을 저장한다
     for i in range(edge_num):
-        s=edges[i].start
-        e=edges[i].end
-        if s==Find(s) and e==Find(e) and merge(s, e):
+        s = edges[i].start
+        e = edges[i].end
+        if s == Find(s) and e == Find(e) and merge(s, e):
             # 끝끼리 병합할 때만 합쳐준다
             mst_edges.append(edges[i])
             cost_sum += edges[i].cost
@@ -451,10 +448,10 @@ def mst_euler_path_cost(mst_edges, root, all_goal_dist):
 
 def stage3_heuristic(cur_node, end_points, all_goal_dist):
     unvisited_goals = [end_point for end_point in end_points if end_point not in cur_node.obj]
-
+    # mst는 미리 구성해둔다. 중요한 건 어떤 노드에서 tour를 시작하는가 하는 것
     nearest_goal = None
     for goal in unvisited_goals:
-        if nearest_goal == None:
+        if nearest_goal is None:
             nearest_goal = goal
         else:
             if manhattan_dist(goal, cur_node.location) < manhattan_dist(nearest_goal, cur_node.location):
@@ -484,7 +481,7 @@ def astar_many_circles(maze):
     path.append(start_point)
     all_goal_dist = [[0 for j in range(len(end_points))] for i in range(len(end_points))]
     # 모든 노드들 간의 거리를 전처리로 구해 놓는다. node[i][j] 는 i번, j번 goal사이의 거리
-    end_len=len(end_points)
+    end_len = len(end_points)
     for goal_idx in range(end_len):
 
         # 모든 목표 노드들 간의 거리 구하기
@@ -525,7 +522,7 @@ def astar_many_circles(maze):
                 next_node.g = cur_node.g + 1
                 q.appendleft(next_node)
 
-    #print(all_goal_dist)
+    # print(all_goal_dist)
 
     edges = []
     for i in range(len(end_points)):
@@ -618,8 +615,8 @@ def astar_many_circles(maze):
             next_node.f = next_node.g + next_node.h
             heappush(pq, next_node)
             # print(next_node.location, next_node.h)
-    print(path)
-    print(maze.isValidPath(path))
+    # print(path)
+    # print(maze.isValidPath(path))
 
     return path
 
