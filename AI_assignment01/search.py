@@ -460,16 +460,8 @@ def astar_many_circles(maze):
                 if next_point in visited:
                     continue
                 visited.add(next_point)
-                # print(next_point)
                 if maze.isObjective(next_point[0], next_point[1]):
-                    # path_between_goal=[]
                     visited_goal.add(next_point)
-                    # visited=set()
-                    track = next_point
-                    """while track != (-1, -1):
-                        path_between_goal.append(track)
-                        # print(track)
-                        track = prev_visited[track]"""
                     all_goal_dist[end_points.index(next_point)][goal_idx] = cur_node.g + 1
                     all_goal_dist[goal_idx][end_points.index(next_point)] = cur_node.g + 1
                 next_node = Node(cur_node, next_point)
@@ -481,7 +473,6 @@ def astar_many_circles(maze):
     pq = []
     visited = {}
     prev_visited={}
-    goal_visit_count={start_point:0}
     # 그 점에서 goal을 몇 개 지나봤는지를 체크한다
     # 시작점은 아무 목표도 지나지 않았음
     start_node = Node(None, start_point)
@@ -492,10 +483,7 @@ def astar_many_circles(maze):
     cur_node = start_node
     cur_path_len=None
 
-    # 거리 디버깅
-    """for end_point in end_points:
-        goal_node=Node(None, end_point)
-        print(end_point, stage2_heuristic(goal_node, end_points, all_goal_dist))"""
+    
 
     while pq and set(cur_node.obj) != set(end_points):
         #print(visited)
@@ -531,9 +519,6 @@ def astar_many_circles(maze):
             visited[(cur_node.location, frozenset(cur_node.obj))]=cur_node.g
             #prev_visited[(cur_node.location, frozenset(cur_node.obj))]=cur_node.parent
 
-            """if set(cur_node.obj)==set(end_points):
-                continue"""
-
             neighbors = maze.neighborPoints(cur_node.location[0], cur_node.location[1])
             # 갈 수 있는 곳
             for neighbor in neighbors:
@@ -541,17 +526,15 @@ def astar_many_circles(maze):
                 next_node = Node(cur_node, neighbor)
                 # cur를 바로전에 방문했을 것이다
                 next_node.obj = cur_node.obj[:]
+				# 메모리가 공유되는 것을 막기 위한 얕은 복사
+				# 시간이 많이 걸리는 deepcopy까지 할 필요는 없다
                 next_node.g = cur_node.g + 1
-                #print(next_node.obj)
                 next_node.h = stage3_heuristic(next_node, end_points, all_goal_dist)
                 next_node.f = next_node.g + next_node.h
-                # print(next_node.h)
                 heappush(pq, next_node)
 
 
     path=path[::-1]
-    #print(path)
-    #print(maze.isValidPath(path))
     return path
 
     ############################################################################
