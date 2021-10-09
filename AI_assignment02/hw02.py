@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from util import manhattanDistance
 from game import Directions
 import random, util
@@ -35,6 +36,7 @@ def scoreEvalFunc(currentGameState):
 class AdversialSearchAgent(Agent):
 
     def __init__(self, getFunc='scoreEvalFunc', depth='2'):
+        super().__init__()
         self.index = 0
         self.evaluationFunction = util.lookup(getFunc, globals())
         # 평가 함수를 가져오기
@@ -50,13 +52,30 @@ class MinimaxAgent(AdversialSearchAgent):
       (depth와 evaluation function은 위에서 정의한 self.depth and self.evaluationFunction을 사용할 것.)
     """
 
-    def maxValue(self, gameState, depth):
-        if depth == self.depth:
+    def maxValue(self, gameState, depth, agentIndex=0):
+        if depth == self.depth or gameState.isWin() or gameState.isLose():
             # 허용 depth까지 왔다. 가장 maxValue를 도출하는 곳으로 가야 함
             return self.evaluationFunction(gameState)
 
         v = float("-inf")
-        move_candidate = gameState.getLegalActions()
+        move_candidate = gameState.getLegalActions(agentIndex)
+        for action in move_candidate:
+            v=max(v, minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex))
+
+        return v
+
+    def minValue(self, gameState, depth, agentIndex=0):
+        if depth == self.depth or gameState.isWin() or gameState.isLose():
+            # 허용 depth까지 왔다. 가장 maxValue를 도출하는 곳으로 가야 함
+            return self.evaluationFunction(gameState)
+
+        v = float("inf")
+        move_candidate = gameState.getLegalActions(agentIndex)
+        for action in move_candidate:
+            v=max(v, maxValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex))
+
+        return v
+
 
     def Action(self, gameState):
         ####################### Write Your Code Here ################################
