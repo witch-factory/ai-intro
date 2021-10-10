@@ -59,8 +59,11 @@ class MinimaxAgent(AdversialSearchAgent):
 
         v = float("-inf")
         move_candidate = gameState.getLegalActions(agentIndex)
+        pacmanIndex=0
+        # 갈 수 있는 곳 중 점수를 최대화하는 곳으로
         for action in move_candidate:
-            v=max(v, minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex))
+            v=max(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, pacmanIndex+1))
+            #팩맨 다음 인덱스부터 시작해서 minvalue 탐색
 
         return v
 
@@ -71,8 +74,16 @@ class MinimaxAgent(AdversialSearchAgent):
 
         v = float("inf")
         move_candidate = gameState.getLegalActions(agentIndex)
-        for action in move_candidate:
-            v=max(v, maxValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex))
+        agentNum=gameState.getNumAgents()
+        pacmanIndex=0
+        if agentIndex==agentNum-1:
+            for action in move_candidate:
+                # 다음 depth로 넘기고 팩맨의 움직임으로
+                v=min(v, self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex))
+
+        else:
+            for action in move_candidate:
+                v = min(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1))
 
         return v
 
@@ -81,7 +92,18 @@ class MinimaxAgent(AdversialSearchAgent):
         ####################### Write Your Code Here ################################
         pacmanIndex = 0
 
-        raise Exception("Not implemented yet")
+        move_candidate = gameState.getLegalActions(pacmanIndex)
+
+        scores = [self.minValue(gameState.generateSuccessor(pacmanIndex, action), 0, pacmanIndex+1) for action in move_candidate]
+        # 팩맨 다음 인덱스부터 minvalue 계산 시작해야
+        #print(scores)
+        bestScore = max(scores)
+        Index = [index for index in range(len(scores)) if scores[index] == bestScore]
+        get_index = random.choice(Index)
+
+        return move_candidate[get_index]
+
+        #raise Exception("Not implemented yet")
 
         ############################################################################
 
