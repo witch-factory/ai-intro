@@ -68,6 +68,7 @@ class MinimaxAgent(AdversialSearchAgent):
         return v
 
     def minValue(self, gameState, depth, agentIndex=0):
+        # 모든 ghost들의 움직임을 다 완료해야 한다
         if depth == self.depth or gameState.isWin() or gameState.isLose():
             # terminal state
             return self.evaluationFunction(gameState)
@@ -76,9 +77,6 @@ class MinimaxAgent(AdversialSearchAgent):
         move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
         agentNum=gameState.getNumAgents()
-
-        for ghostIndex in range(1,agentNum):
-            for action in move_candidate:
                 
 
         if agentIndex==agentNum-1:
