@@ -36,7 +36,6 @@ def scoreEvalFunc(currentGameState):
 class AdversialSearchAgent(Agent):
 
     def __init__(self, getFunc='scoreEvalFunc', depth='2'):
-        super().__init__()
         self.index = 0
         self.evaluationFunction = util.lookup(getFunc, globals())
         # 평가 함수를 가져오기
@@ -77,6 +76,7 @@ class MinimaxAgent(AdversialSearchAgent):
         move_candidate = gameState.getLegalActions(agentIndex)
         agentNum=gameState.getNumAgents()
         pacmanIndex=0
+
         if agentIndex==agentNum-1:
             for action in move_candidate:
                 # 다음 depth로 넘기고 팩맨의 움직임으로
@@ -197,10 +197,56 @@ class ExpectimaxAgent(AdversialSearchAgent):
       [문제 03] Expectimax의 Action을 구현하시오. (25점)
       (depth와 evaluation function은 위에서 정의한 self.depth and self.evaluationFunction을 사용할 것.)
     """
+    def maxValue(self, gameState, depth, agentIndex=0):
+        if depth == self.depth or gameState.isWin() or gameState.isLose():
+            # terminal of search
+            return self.evaluationFunction(gameState)
+
+        v=float("-inf")
+        move_candidate=gameState.getLegalActions(agentIndex)
+        pacmanIndex = 0
+        firstGhostIndex = pacmanIndex + 1
+        for action in move_candidate:
+            v=max(v, self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex))
+        return v
+
+    def minValue(self, gameState, depth, agentIndex=0):
+        if depth == self.depth or gameState.isWin() or gameState.isLose():
+            # terminal of search
+            return self.evaluationFunction(gameState)
+
+        v=float("-inf")
+        move_candidate = gameState.getLegalActions(agentIndex)
+        pacmanIndex = 0
+        firstGhostIndex = pacmanIndex + 1
+        agentNum = gameState.getNumAgents()
+
+        if agentIndex==agentNum-1:
+            for action in move_candidate:
+                # 다음 depth로 넘기고 팩맨의 움직임으로
+                v=min(v, self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex))
+
+        else:
+            for action in move_candidate:
+                v = min(v, self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1))
+
+        return v
+
+
+    def chanceValue(self, gameState, depth, agentIndex=0):
+        move_candidate=gameState.getLegalActions(agentIndex)
+        candidateNum = len(move_candidate)
+        probability=1/candidateNum
+        v=0
+        for action in move_candidate:
+            v+=probability*self.evaluationFunction(gameState.generateSuccessor(agentIndex, action))
+        return v
+
 
     def Action(self, gameState):
         ####################### Write Your Code Here ################################
 
-        raise Exception("Not implemented yet")
+
+        #raise Exception("Not implemented yet")
 
         ############################################################################
