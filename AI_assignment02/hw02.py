@@ -60,7 +60,6 @@ class MinimaxAgent(AdversialSearchAgent):
         pacmanIndex = 0
         firstGhostIndex = pacmanIndex + 1
         agentNum = gameState.getNumAgents()
-        # v = float("-inf")
         move_candidate = gameState.getLegalActions(agentIndex)
         # 가능한 움직임
 
@@ -75,7 +74,6 @@ class MinimaxAgent(AdversialSearchAgent):
             # terminal state
             return self.evaluationFunction(gameState)
 
-        # v = float("inf")
         move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
         agentNum = gameState.getNumAgents()
@@ -195,7 +193,6 @@ class ExpectimaxAgent(AdversialSearchAgent):
             # terminal of search
             return self.evaluationFunction(gameState)
 
-        v = float("-inf")
         move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
         firstGhostIndex = pacmanIndex + 1
