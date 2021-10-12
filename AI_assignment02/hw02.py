@@ -52,20 +52,29 @@ class MinimaxAgent(AdversialSearchAgent):
     """
 
     def maxValue(self, gameState, depth, agentIndex=0):
+        # maxValue는 팩맨이 취하는 것이다
         if gameState.isWin() or gameState.isLose() or depth==self.depth:
             # terminal state
             return self.evaluationFunction(gameState)
 
-        v = float("-inf")
+        pacmanIndex = 0
+        firstGhostIndex = pacmanIndex + 1
+        agentNum = gameState.getNumAgents()
+        #v = float("-inf")
+        scores=[]
         move_candidate = gameState.getLegalActions(agentIndex)
-        pacmanIndex=0
-        firstGhostIndex=pacmanIndex+1
-        # max in minValue of every successor
+        # 가능한 움직임
         for action in move_candidate:
+            scores.append(self.minValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex))
+
+        return max(scores)
+
+        # max in minValue of every successor
+        """for action in move_candidate:
             v=max(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex))
             #팩맨 다음 인덱스부터 시작해서 minvalue 탐색
 
-        return v
+        return v"""
 
     def minValue(self, gameState, depth, agentIndex=0):
         # 모든 ghost들의 움직임을 다 완료해야 한다
@@ -73,13 +82,29 @@ class MinimaxAgent(AdversialSearchAgent):
             # terminal state
             return self.evaluationFunction(gameState)
 
-        v = float("inf")
+        #v = float("inf")
         move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
-        agentNum=gameState.getNumAgents()
-                
+        agentNum = gameState.getNumAgents()
+        firstGhostIndex=pacmanIndex+1
+        lastGhostIndex = agentNum - 1
 
-        if agentIndex==agentNum-1:
+        scores=[]
+        for action in move_candidate:
+            if agentIndex<agentNum-1:
+                # before last ghost
+                scores.append(self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1))
+            else:
+                scores.append(self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex))
+
+        return min(scores)
+
+        """move_candidate=gameState.getLegalActions(lastGhostIndex)
+        # 마지막 유령을 움직여 보고 가장 높은 value를 취할 수 있는 곳으로 간다
+        for action in move_candidate:
+            v = min(v, self.maxValue(gameState.generateSuccessor(lastGhostIndex, action), depth + 1, pacmanIndex))"""
+
+        """if agentIndex==agentNum-1:
             for action in move_candidate:
                 # 다음 depth로 넘기고 팩맨의 움직임으로
                 v=min(v, self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex))
@@ -88,7 +113,7 @@ class MinimaxAgent(AdversialSearchAgent):
             for action in move_candidate:
                 v = min(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1))
 
-        return v
+        return v"""
 
 
     def Action(self, gameState):
