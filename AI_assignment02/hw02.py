@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from util import manhattanDistance
 from game import Directions
 import random, util
@@ -53,28 +53,21 @@ class MinimaxAgent(AdversialSearchAgent):
 
     def maxValue(self, gameState, depth, agentIndex=0):
         # maxValue는 팩맨이 취하는 것이다
-        if gameState.isWin() or gameState.isLose() or depth==self.depth:
+        if gameState.isWin() or gameState.isLose() or depth == self.depth:
             # terminal state
             return self.evaluationFunction(gameState)
 
         pacmanIndex = 0
         firstGhostIndex = pacmanIndex + 1
         agentNum = gameState.getNumAgents()
-        #v = float("-inf")
-        scores=[]
+        # v = float("-inf")
         move_candidate = gameState.getLegalActions(agentIndex)
         # 가능한 움직임
-        for action in move_candidate:
-            scores.append(self.minValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex))
 
-        return max(scores)
-
+        successorValues = [self.minValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex)
+                           for action in move_candidate]
         # max in minValue of every successor
-        """for action in move_candidate:
-            v=max(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex))
-            #팩맨 다음 인덱스부터 시작해서 minvalue 탐색
-
-        return v"""
+        return max(successorValues)
 
     def minValue(self, gameState, depth, agentIndex=0):
         # 모든 ghost들의 움직임을 다 완료해야 한다
@@ -82,39 +75,16 @@ class MinimaxAgent(AdversialSearchAgent):
             # terminal state
             return self.evaluationFunction(gameState)
 
-        #v = float("inf")
+        # v = float("inf")
         move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
         agentNum = gameState.getNumAgents()
-        firstGhostIndex=pacmanIndex+1
-        lastGhostIndex = agentNum - 1
 
-        scores=[]
-        for action in move_candidate:
-            if agentIndex<agentNum-1:
-                # before last ghost
-                scores.append(self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1))
-            else:
-                scores.append(self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex))
-
-        return min(scores)
-
-        """move_candidate=gameState.getLegalActions(lastGhostIndex)
-        # 마지막 유령을 움직여 보고 가장 높은 value를 취할 수 있는 곳으로 간다
-        for action in move_candidate:
-            v = min(v, self.maxValue(gameState.generateSuccessor(lastGhostIndex, action), depth + 1, pacmanIndex))"""
-
-        """if agentIndex==agentNum-1:
-            for action in move_candidate:
-                # 다음 depth로 넘기고 팩맨의 움직임으로
-                v=min(v, self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex))
-
-        else:
-            for action in move_candidate:
-                v = min(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1))
-
-        return v"""
-
+        successorValues = [self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1) if agentIndex < agentNum - 1
+                           else self.maxValue(gameState.generateSuccessor(agentIndex, action), depth + 1, pacmanIndex)
+                           for action in move_candidate]
+        # 마지막 유령 즉 index==agentNum-1 이 되면 다음 depth로 넘어가 줘야 한다
+        return min(successorValues)
 
     def Action(self, gameState):
         ####################### Write Your Code Here ################################
@@ -122,16 +92,17 @@ class MinimaxAgent(AdversialSearchAgent):
         firstGhostIndex = pacmanIndex + 1
         move_candidate = gameState.getLegalActions(pacmanIndex)
 
-        scores = [self.minValue(gameState.generateSuccessor(pacmanIndex, action), 0, firstGhostIndex) for action in move_candidate]
+        scores = [self.minValue(gameState.generateSuccessor(pacmanIndex, action), 0, firstGhostIndex) for action in
+                  move_candidate]
         # 팩맨 다음 인덱스부터 minvalue 계산 시작해야
-        #print(scores)
+        # print(scores)
         bestScore = max(scores)
         Index = [index for index in range(len(scores)) if scores[index] == bestScore]
         get_index = random.choice(Index)
 
         return move_candidate[get_index]
 
-        #raise Exception("Not implemented yet")
+        # raise Exception("Not implemented yet")
 
         ############################################################################
 
@@ -141,22 +112,22 @@ class AlphaBetaAgent(AdversialSearchAgent):
       [문제 02] AlphaBeta의 Action을 구현하시오. (25점)
       (depth와 evaluation function은 위에서 정의한 self.depth and self.evaluationFunction을 사용할 것.)
     """
+
     def maxValue(self, gameState, depth, agentIndex, alpha, beta):
         if depth == self.depth or gameState.isWin() or gameState.isLose():
             # terminal of search
             return self.evaluationFunction(gameState)
-
-        v=float("-inf")
 
         move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
         firstGhostIndex = pacmanIndex + 1
         # 갈 수 있는 곳 중 점수를 최대화하는 곳으로
         for action in move_candidate:
-            v = max(v, self.minValue(gameState.generateSuccessor(pacmanIndex, action), depth, firstGhostIndex, alpha, beta))
-            if v>=beta:
+            v = max(v, self.minValue(gameState.generateSuccessor(pacmanIndex, action), depth, firstGhostIndex, alpha,
+                                     beta))
+            if v >= beta:
                 return v
-            alpha=max(alpha, v)
+            alpha = max(alpha, v)
 
         return v
 
@@ -171,39 +142,40 @@ class AlphaBetaAgent(AdversialSearchAgent):
         pacmanIndex = 0
         firstGhostIndex = pacmanIndex + 1
 
-        if agentIndex==agentNum-1:
+        if agentIndex == agentNum - 1:
             for action in move_candidate:
                 # 다음 depth로 넘기고 팩맨의 움직임으로
 
-                v=min(v, self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex, alpha, beta))
-                if v<=alpha:
+                v = min(v, self.maxValue(gameState.generateSuccessor(agentIndex, action), depth + 1, pacmanIndex, alpha,
+                                         beta))
+                if v <= alpha:
                     return v
-                beta=min(beta, v)
+                beta = min(beta, v)
             return v
         else:
             for action in move_candidate:
 
-                v=min(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1, alpha, beta))
+                v = min(v, self.minValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1, alpha,
+                                         beta))
                 # 다음 에이전트부터 또 시작
 
-                if v<=alpha:
+                if v <= alpha:
                     return v
-                beta=min(beta,v)
+                beta = min(beta, v)
             return v
-
-
 
     def Action(self, gameState):
         ####################### Write Your Code Here ################################
 
         pacmanIndex = 0
-        firstGhostIndex=pacmanIndex+1
+        firstGhostIndex = pacmanIndex + 1
         move_candidate = gameState.getLegalActions(pacmanIndex)
-        alpha=float("-inf")
-        beta=float("inf")
-        #value, move=self.maxValue(gameState, 0, pacmanIndex, alpha, beta)
+        alpha = float("-inf")
+        beta = float("inf")
+        # value, move=self.maxValue(gameState, 0, pacmanIndex, alpha, beta)
 
-        scores = [self.minValue(gameState.generateSuccessor(pacmanIndex, action), 0, firstGhostIndex, alpha, beta) for action in
+        scores = [self.minValue(gameState.generateSuccessor(pacmanIndex, action), 0, firstGhostIndex, alpha, beta) for
+                  action in
                   move_candidate]
         # 팩맨 다음 인덱스부터 minvalue 계산 시작해야
         # print(scores)
@@ -213,8 +185,7 @@ class AlphaBetaAgent(AdversialSearchAgent):
 
         return move_candidate[get_index]
 
-
-        #raise Exception("Not implemented yet")
+        # raise Exception("Not implemented yet")
 
         ############################################################################
 
@@ -224,44 +195,42 @@ class ExpectimaxAgent(AdversialSearchAgent):
       [문제 03] Expectimax의 Action을 구현하시오. (25점)
       (depth와 evaluation function은 위에서 정의한 self.depth and self.evaluationFunction을 사용할 것.)
     """
+
     def maxValue(self, gameState, depth, agentIndex=0):
         if depth == self.depth or gameState.isWin() or gameState.isLose():
             # terminal of search
             return self.evaluationFunction(gameState)
 
-        v=float("-inf")
-        move_candidate=gameState.getLegalActions(agentIndex)
+        v = float("-inf")
+        move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
         firstGhostIndex = pacmanIndex + 1
         for action in move_candidate:
-            v=max(v, self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex))
+            v = max(v, self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex))
             # 유령들의 움직임 chance value
         return v
-
-
 
     def chanceValue(self, gameState, depth, agentIndex=0):
         if depth == self.depth or gameState.isWin() or gameState.isLose():
             # terminal of search
             return self.evaluationFunction(gameState)
 
-        move_candidate=gameState.getLegalActions(agentIndex)
+        move_candidate = gameState.getLegalActions(agentIndex)
         agentNum = gameState.getNumAgents()
         pacmanIndex = 0
         candidateNum = len(move_candidate)
-        v=0
+        v = 0
 
-        if agentIndex==agentNum-1:
+        if agentIndex == agentNum - 1:
             for action in move_candidate:
                 # 다음 depth로 넘기고 팩맨의 움직임으로
-                v += self.maxValue(gameState.generateSuccessor(agentIndex, action), depth+1, pacmanIndex)
+                v += self.maxValue(gameState.generateSuccessor(agentIndex, action), depth + 1, pacmanIndex)
 
         else:
             for action in move_candidate:
-                v += self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1)
+                v += self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
 
-        return v/candidateNum
-
+        return v / candidateNum
 
     def Action(self, gameState):
         ####################### Write Your Code Here ################################
@@ -279,6 +248,6 @@ class ExpectimaxAgent(AdversialSearchAgent):
         get_index = random.choice(Index)
 
         return move_candidate[get_index]
-        #raise Exception("Not implemented yet")
+        # raise Exception("Not implemented yet")
 
         ############################################################################
