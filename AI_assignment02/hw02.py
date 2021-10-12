@@ -199,10 +199,11 @@ class ExpectimaxAgent(AdversialSearchAgent):
         move_candidate = gameState.getLegalActions(agentIndex)
         pacmanIndex = 0
         firstGhostIndex = pacmanIndex + 1
-        for action in move_candidate:
-            v = max(v, self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex))
-            # 유령들의 움직임 chance value
-        return v
+        successorChanceValues=[
+            self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, firstGhostIndex)
+            for action in move_candidate
+        ]
+        return max(successorChanceValues)
 
     def chanceValue(self, gameState, depth, agentIndex=0):
         if depth == self.depth or gameState.isWin() or gameState.isLose():
@@ -215,16 +216,16 @@ class ExpectimaxAgent(AdversialSearchAgent):
         candidateNum = len(move_candidate)
         v = 0
 
-        if agentIndex == agentNum - 1:
-            for action in move_candidate:
+        for action in move_candidate:
+            if agentIndex<agentNum-1:
+                v+=self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
+                # 다음 인덱스의 chanceValue를 포함시킨다
+            else:
                 # 다음 depth로 넘기고 팩맨의 움직임으로
                 v += self.maxValue(gameState.generateSuccessor(agentIndex, action), depth + 1, pacmanIndex)
 
-        else:
-            for action in move_candidate:
-                v += self.chanceValue(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
-
         return v / candidateNum
+    # 기댓값 리턴
 
     def Action(self, gameState):
         ####################### Write Your Code Here ################################
