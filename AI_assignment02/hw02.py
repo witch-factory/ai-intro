@@ -125,7 +125,7 @@ class AlphaBetaAgent(AdversialSearchAgent):
         for action in move_candidate:
             successorValue = self.minValue(gameState.generateSuccessor(pacmanIndex, action), depth, firstGhostIndex,
                                            alpha, beta)
-            if successorValue >= beta:
+            if successorValue > beta:
                 return successorValue
             alpha = max(alpha, successorValue)
             successorValues.append(successorValue)
@@ -149,7 +149,7 @@ class AlphaBetaAgent(AdversialSearchAgent):
             else:
                 # go to the next depth search if it is the last ghost
                 successorValue = self.maxValue(gameState.generateSuccessor(agentIndex, action), depth + 1, pacmanIndex, alpha, beta)
-            if successorValue<=alpha:
+            if successorValue<alpha:
                 return successorValue
             beta=min(beta, successorValue)
             successorValues.append(successorValue)
