@@ -179,7 +179,7 @@ class ClassicGameRules:
       print("======================================")
     if not self.quiet:
       self.count += 1
-      print("["+str(self.count)+"] Pacman Win! Score: %d" % state.data.score)
+      #print("["+str(self.count)+"] Pacman Win! Score: %d" % state.data.score)
     game.gameOver = True
 
   def lose( self, state, game ):
@@ -187,7 +187,7 @@ class ClassicGameRules:
       print("======================================")
     if not self.quiet:
       self.count += 1
-      print("["+str(self.count)+"] Pacman Lose... Score: %d" % state.data.score)
+      #print("["+str(self.count)+"] Pacman Lose... Score: %d" % state.data.score)
     game.gameOver = True
 
   def getProgress(self, game):
@@ -548,7 +548,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     print('-----------Game Results--------------')
     print('Average Score:', sum(scores) / float(len(scores)))
     print('Score Results:', ', '.join([str(score) for score in scores]))
-    print('Record:', ', '.join([ ['Lose', 'Win'][int(w)] for w in wins]))
+    """print('Record:', ', '.join([ ['Lose', 'Win'][int(w)] for w in wins]))"""
     print('')
     print(("Win Rate: %d%% (%d/%d)" % (winRate * 100, wins.count(True), len(wins))))
 
