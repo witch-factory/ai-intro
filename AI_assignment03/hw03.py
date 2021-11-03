@@ -123,9 +123,9 @@ def suspect():
     ## 증언 (4)
     formulas.append(Equiv(TellTruth(nicole), Not(TellTruth(susan))))
     # 사실 (5)
-    formulas.append(And(Exists('$x', TellTruth('$x')), Implies(Not(Equals('$x', '$y')), Not(TellTruth('$y')))))
+    formulas.append(Exists('$x', Forall('$y', And(TellTruth('$x'), Implies(TellTruth('$y'), Equals('$x', '$y'))))))
     # 사실 (6)
-    formulas.append(And(Exists('$x', CrashedServer('$x')), Implies(Not(Equals('$x', '$y')), Not(CrashedServer('$y')))))
+    formulas.append(Exists('$x', Forall('$y', And(CrashedServer('$x'), Implies(CrashedServer('$y'), Equals('$x', '$y'))))))
 
     ################################################################
     # Query: Who did it?
