@@ -55,7 +55,7 @@ def logic02_01():
 
     ################# Write Your Code Here #########################
 
-    return Forall('$x', And(Person('$x'), ))
+    return Forall('$x', Implies(Person('$x'), Exists('$y', Mother('$x', '$y'))))
 
     ################################################################
 
@@ -66,6 +66,7 @@ def logic02_02():
     def Child(x, y): return Atom('Child', x, y)    # whether x has a child y
 
     ################# Write Your Code Here #########################
+    return Exists('$x', And(Person('$x'), Forall('$y', Not(Child('$x', '$y')))))
 
     ################################################################
 
@@ -77,7 +78,7 @@ def logic02_03():
     def Daughter(x, y): return Atom('Daughter', x, y)  # whether x has a daughter y
     ################# Write Your Code Here #########################
 
-
+    return Forall('$x', Forall('$y', Equiv(Daughter('$x', '$y'), And(Female('$y'), Child('$x', '$y')))))
 
     ################################################################
 
@@ -89,7 +90,7 @@ def logic02_04():
     def Grandmother(x, y): return Atom('Grandmother', x, y)  # whether x has a grandmother y
     ################# Write Your Code Here #########################
 
-
+    # x가 y의 grandmother
 
     ################################################################
 
@@ -113,6 +114,7 @@ def suspect():
     증언 (1)을 제외한 (2),(3),(4),(5),(6)을 구현하시오.
     """
     ################# Write Your Code Here #########################
+    ## 증언 (2)
 
 
 
