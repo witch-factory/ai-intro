@@ -90,8 +90,10 @@ def logic02_04():
     def Grandmother(x, y): return Atom('Grandmother', x, y)  # whether x has a grandmother y
     ################# Write Your Code Here #########################
 
-    # x가 y의 grandmother
-
+    # x가 z의 grandmother
+    return Forall('$x', Forall('$z', Equiv(Grandmother('$x', '$z'),
+                                           And(Female('$z'), Exists('$y', And(Parent('$x', '$y'), Parent('$y', '$z')))))))
+    #z가 여자이고 어떤 y가 있어서 조부모와의 중간다리 역할을 한다
     ################################################################
 
 
@@ -115,15 +117,15 @@ def suspect():
     """
     ################# Write Your Code Here #########################
     ## 증언 (2)
-
-
-
-
-
-
-
-
-
+    formulas.append(Equiv(TellTruth(susan), CrashedServer(nicole)))
+    ## 증언 (3)
+    formulas.append(Equiv(TellTruth(mark), CrashedServer(susan)))
+    ## 증언 (4)
+    formulas.append(Equiv(TellTruth(nicole), Not(TellTruth(susan))))
+    # 사실 (5)
+    formulas.append(And(Exists('$x', TellTruth('$x')), Implies(Not(Equals('$x', '$y')), Not(TellTruth('$y')))))
+    # 사실 (6)
+    formulas.append(And(Exists('$x', CrashedServer('$x')), Implies(Not(Equals('$x', '$y')), Not(CrashedServer('$y')))))
 
     ################################################################
     # Query: Who did it?
