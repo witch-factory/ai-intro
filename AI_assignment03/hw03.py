@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 from logic import *
 
 """
@@ -13,6 +13,8 @@ def logic01_01():
     Rain = Atom('Rain')                   # whether it's raining
     ################# Write Your Code Here #########################
 
+    return Implies(And(Summer, California), Not(Rain))
+
     ################################################################
 
 ## Sentence 02: "It's wet if and only if it is raining or the sprinklers are on."
@@ -23,6 +25,7 @@ def logic01_02():
     Sprinklers = Atom('Sprinklers')  # whether the sprinklers are on
     ################# Write Your Code Here #########################
 
+    return Equiv(Wet, Or(Rain, Sprinklers))
     ################################################################
 
 ## Sentence 03: "Either it's day or night (but not both)."
@@ -31,6 +34,8 @@ def logic01_03():
     Day = Atom('Day')     # whether it's day
     Night = Atom('Night') # whether it's night
     ################# Write Your Code Here #########################
+
+    return And(Or(Day, Night), Not(And(Day, Night)))
 
     ################################################################
 
@@ -49,6 +54,8 @@ def logic02_01():
     def Mother(x, y): return Atom('Mother', x, y)  # whether x's mother is y
 
     ################# Write Your Code Here #########################
+
+    return Forall('$x', And(Person('$x'), ))
 
     ################################################################
 
@@ -106,7 +113,6 @@ def suspect():
     증언 (1)을 제외한 (2),(3),(4),(5),(6)을 구현하시오.
     """
     ################# Write Your Code Here #########################
-
 
 
 
