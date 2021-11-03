@@ -53,6 +53,7 @@ class MinimaxAgent(AdversialSearchAgent):
 
     def maxValue(self, gameState, depth, agentIndex=0):
         # maxValue는 팩맨이 취하는 것이다
+
         if gameState.isWin() or gameState.isLose() or depth == self.depth:
             # terminal state
             return self.evaluationFunction(gameState)
@@ -91,11 +92,14 @@ class MinimaxAgent(AdversialSearchAgent):
         firstGhostIndex = pacmanIndex + 1
         move_candidate = gameState.getLegalActions(pacmanIndex)
 
+        #print(self.evaluationFunction(gameState))
+
         scores = [self.minValue(gameState.generateSuccessor(pacmanIndex, action), 0, firstGhostIndex) for action in
                   move_candidate]
         # 팩맨 다음 인덱스부터 minvalue 계산 시작해야
-        # print(scores)
+        #print(scores)
         bestScore = max(scores)
+        print(bestScore)
         Index = [index for index in range(len(scores)) if scores[index] == bestScore]
         get_index = random.choice(Index)
 
