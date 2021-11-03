@@ -170,8 +170,6 @@ def number_theorem():
     # theorem 6
     formulas.append(Forall('$x', Forall('$y', Forall('$z', Implies(And(Larger('$x', '$y'), Larger('$y', '$z')), Larger('$x', '$z'))))))
 
-
-
     ################################################################
     # Query: For each number, there exists an even number larger than it.
     query = Forall('$x', Exists('$y', And(Even('$y'), Larger('$y', '$x'))))
