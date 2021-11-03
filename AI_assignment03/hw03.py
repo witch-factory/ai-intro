@@ -149,22 +149,23 @@ def number_theorem():
     query = None
     ################# Write Your Code Here #########################
     # theorem 1
-    formulas.append(Forall('$x', And(Exists('$y', And(Successor('$x', '$y'), Not(Equals('$x', '$y')))),
-                                     Implies(Successor('$x', '$z'), Equals('$y', '$z')))))
+    formulas.append(Forall('$x', Exists('$y', Forall('$z',
+                                     And(Successor('$x', '$y'), And(Not(Equals('$x', '$y')), Implies(Successor('$x', '$z'), Equals('$y', '$z'))))
+                                     ))))
     # 만약 z가 x의 successor이면 z는 무조건 y와 같다 -> unique successor
 
     # theorem 2
     formulas.append(Forall('$x', And(Or(Even('$x'), Odd('$x')), Not(And(Even('$x'), Odd('$x'))))))
 
     # theorem 3
-    formulas.append(Forall('$x', Implies(And(Successor('$x', '$y'), Even('$x')), Odd('$y'))))
+    formulas.append(Forall('$x', Forall('$y', Implies(And(Successor('$x', '$y'), Even('$x')), Odd('$y')))))
     # x가 짝수이고 y가 x의 successor이면 y는 홀수
 
     # theorem 4
-    formulas.append(Forall('$x', Implies(And(Successor('$x', '$y'), Odd('$x')), Even('$y'))))
+    formulas.append(Forall('$x', Forall('$y', Implies(And(Successor('$x', '$y'), Odd('$x')), Even('$y')))))
 
     # theorem 5
-    formulas.append(Forall('$x', Implies(Successor('$x', '$y'), Larger('$y', '$x'))))
+    formulas.append(Forall('$x', Forall('$y', Implies(Successor('$x', '$y'), Larger('$y', '$x')))))
     #y가 x의 successor 이면 y가 x보다 크다
     # theorem 6
     formulas.append(Forall('$x', Forall('$y', Forall('$z', Implies(And(Larger('$x', '$y'), Larger('$y', '$z')), Larger('$x', '$z'))))))
